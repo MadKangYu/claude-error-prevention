@@ -738,14 +738,33 @@ timeout 5 openclaw status --json 2>&1 | head -5
 
 모든 문서는 공식 소스와 100% 동기화되어 있습니다 (2026-02-07).
 
+### 에러 패턴 & 해결책
+
 | 문서 | 설명 | 공식 소스 |
 |------|------|-----------|
-| [Installation Guide](docs/installation.md) | 설치 방법 (Claude Code, Crush, QMD) | code.claude.com, charmbracelet/crush, tobi/qmd |
+| [Installation Guide](docs/guides/installation.md) | 설치 방법 (Claude Code, Crush, QMD) | code.claude.com, charmbracelet/crush, tobi/qmd |
 | [Claude Code Errors](docs/claude-code-errors.md) | Claude Code 에러 패턴 18개 | code.claude.com/troubleshooting |
 | [OpenCode/Crush Errors](docs/opencode-errors.md) | OpenCode/Crush 에러 패턴 8개 | charmbracelet/crush |
 | [OpenClaw Errors](docs/openclaw-errors.md) | OpenClaw 에러 패턴 10개 | openclaw.ai |
 | [Obsidian Errors](docs/obsidian-errors.md) | Obsidian + QMD 에러 패턴 15개 | tobi/qmd |
-| [Context Window](docs/context-window-ultimate.md) | Context 관리 SOTA 가이드 | 실전 경험 |
+| [Context Window](docs/guides/context-window-ultimate.md) | Context 관리 SOTA 가이드 | 실전 경험 |
+
+### 🆕 공식 문서 검증 가이드 (NEW)
+
+| 문서 | 설명 | 핵심 내용 |
+|------|------|-----------|
+| [Verification Methodology](docs/guides/verification-methodology.md) | 공식 문서 검증 방법론 | curl 기반 verbatim 검증 |
+| [Claude Memory Official](docs/guides/claude-memory-official.md) | CLAUDE.md, rules/ 공식 문서 | code.claude.com 원문 |
+| [Claude Settings Official](docs/guides/claude-settings-official.md) | settings.json 공식 문서 | 스코프, 권한 설정 |
+| [Claude MCP Official](docs/guides/claude-mcp-official.md) | MCP 설정 공식 문서 | OAuth, 스코프, 설정 |
+
+### 🎓 초보자 가이드 (NEW)
+
+| 문서 | 설명 | 대상 |
+|------|------|------|
+| [The Journey to Claude Code](docs/guides/the-journey-to-claude-code.md) | Feynman 스타일 스토리 | 완전 초보자 |
+| [Beginner Guide](docs/guides/beginner-guide.md) | 용어 사전 + 어원 설명 | 개념 이해 필요한 분 |
+| [Quick Cheatsheet](docs/guides/quick-cheatsheet.md) | 복사-붙여넣기 명령어 | 빠른 설정 원하는 분 |
 
 ---
 
