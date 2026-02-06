@@ -1,0 +1,413 @@
+# =============================================================================
+# RELEASE MONITOR - Auto-track upstream tool releases
+# =============================================================================
+# This workflow monitors releases of tracked tools and:
+# 1. Checks for new versions every 6 hours
+# 2. Creates GitHub issues for documentation updates
+# 3. Sends notifications via Discord/Slack webhooks
+# 4. Caches version state to avoid duplicate notifications
+#
+# Tracked Tools:
+# - Claude Code (Anthropic)
+# - OpenCode (anomalyco)
+# - Crush (charmbracelet)
+# - Oh My OpenCode (code-yeongyu)
+# - Ghostty (mitchellh)
+# - Obsidian (obsidianmd)
+#
+# Setup Required:
+# 1. Add DISCORD_WEBHOOK_URL to repository secrets
+# 2. Add SLACK_WEBHOOK_URL to repository secrets (optional)
+# 3. Enable GitHub Actions in repository settings
+# =============================================================================
+
+name: Release Monitor
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
+    inputs:
+      force_check:
+        description: 'Force check all tools (ignore cache)'
+        required: false
+        default: false
+        type: boolean
+      notify_test:
+        description: 'Send test notification'
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+  issues: write
+
+env:
+  # Tool configurations
+  TOOLS: |
+    {
+      "claude-code": {
+        "name": "Claude Code",
+        "type": "npm",
+        "package": "@anthropic-ai/claude-code",
+        "repo": "anthropics/claude-code",
+        "docs": "https://docs.anthropic.com/en/docs/claude-code",
+        "doc_file": "docs/claude-code-errors.md"
+      },
+      "opencode": {
+        "name": "OpenCode",
+        "type": "github",
+        "repo": "anomalyco/opencode",
+        "docs": "https://github.com/anomalyco/opencode",
+        "doc_file": "docs/opencode-errors.md"
+      },
+      "crush": {
+        "name": "Crush",
+        "type": "github",
+        "repo": "charmbracelet/crush",
+        "docs": "https://github.com/charmbracelet/crush",
+        "doc_file": "docs/opencode-errors.md"
+      },
+      "oh-my-opencode": {
+        "name": "Oh My OpenCode",
+        "type": "github",
+        "repo": "code-yeongyu/oh-my-opencode",
+        "docs": "https://github.com/code-yeongyu/oh-my-opencode",
+        "doc_file": "docs/oh-my-opencode-errors.md"
+      },
+      "ghostty": {
+        "name": "Ghostty",
+        "type": "github",
+        "repo": "ghostty-org/ghostty",
+        "docs": "https://ghostty.org/docs",
+        "doc_file": "docs/ghostty-errors.md"
+      },
+      "obsidian": {
+        "name": "Obsidian",
+        "type": "github",
+        "repo": "obsidianmd/obsidian-releases",
+        "docs": "https://help.obsidian.md",
+        "doc_file": "docs/obsidian-errors.md"
+      }
+    }
+
+jobs:
+  # ===========================================================================
+  # Job 1: Check for new releases
+  # ===========================================================================
+  check-releases:
+    runs-on: ubuntu-latest
+    outputs:
+      updates: ${{ steps.check.outputs.updates }}
+      has_updates: ${{ steps.check.outputs.has_updates }}
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install -g semver
+
+      - name: Restore version cache
+        uses: actions/cache@v4
+        id: cache
+        with:
+          path: .version-cache
+          key: version-cache-${{ github.run_id }}
+          restore-keys: |
+            version-cache-
+
+      - name: Initialize cache file
+        run: |
+          if [ ! -f .version-cache ]; then
+            echo '{}' > .version-cache
+          fi
+          cat .version-cache
+
+      - name: Check for updates
+        id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+          FORCE_CHECK: ${{ inputs.force_check }}
+        run: |
+          #!/bin/bash
+          set -euo pipefail
+          
+          UPDATES='[]'
+          HAS_UPDATES='false'
+          CACHE=$(cat .version-cache)
+          
+          echo "=== Checking for updates ==="
+          echo ""
+          
+          # Parse tools JSON
+          TOOLS_JSON='${{ env.TOOLS }}'
+          
+          # Check each tool
+          for tool_id in $(echo "$TOOLS_JSON" | jq -r 'keys[]'); do
+            TOOL=$(echo "$TOOLS_JSON" | jq -r --arg id "$tool_id" '.[$id]')
+            NAME=$(echo "$TOOL" | jq -r '.name')
+            TYPE=$(echo "$TOOL" | jq -r '.type')
+            REPO=$(echo "$TOOL" | jq -r '.repo')
+            DOCS=$(echo "$TOOL" | jq -r '.docs')
+            DOC_FILE=$(echo "$TOOL" | jq -r '.doc_file')
+            
+            echo "Checking $NAME ($tool_id)..."
+            
+            # Get current version from cache
+            CACHED_VERSION=$(echo "$CACHE" | jq -r --arg id "$tool_id" '.[$id] // "0.0.0"')
+            
+            # Get latest version based on type
+            if [ "$TYPE" = "npm" ]; then
+              PACKAGE=$(echo "$TOOL" | jq -r '.package')
+              LATEST_VERSION=$(npm view "$PACKAGE" version 2>/dev/null || echo "0.0.0")
+            elif [ "$TYPE" = "github" ]; then
+              LATEST_VERSION=$(gh release view --repo "$REPO" --json tagName -q '.tagName' 2>/dev/null | sed 's/^v//' || echo "0.0.0")
+            fi
+            
+            echo "  Cached: $CACHED_VERSION"
+            echo "  Latest: $LATEST_VERSION"
+            
+            # Compare versions
+            if [ "$FORCE_CHECK" = "true" ] || [ "$LATEST_VERSION" != "$CACHED_VERSION" ]; then
+              if [ "$LATEST_VERSION" != "0.0.0" ] && [ "$LATEST_VERSION" != "$CACHED_VERSION" ]; then
+                echo "  ✅ UPDATE DETECTED!"
+                HAS_UPDATES='true'
+                
+                # Get release notes
+                if [ "$TYPE" = "github" ]; then
+                  RELEASE_NOTES=$(gh release view --repo "$REPO" --json body -q '.body' 2>/dev/null | head -c 500 || echo "No release notes")
+                  RELEASE_URL=$(gh release view --repo "$REPO" --json url -q '.url' 2>/dev/null || echo "")
+                else
+                  RELEASE_NOTES="NPM package updated"
+                  RELEASE_URL="https://www.npmjs.com/package/$PACKAGE"
+                fi
+                
+                # Add to updates array
+                UPDATE=$(jq -n \
+                  --arg id "$tool_id" \
+                  --arg name "$NAME" \
+                  --arg old "$CACHED_VERSION" \
+                  --arg new "$LATEST_VERSION" \
+                  --arg docs "$DOCS" \
+                  --arg doc_file "$DOC_FILE" \
+                  --arg notes "$RELEASE_NOTES" \
+                  --arg url "$RELEASE_URL" \
+                  '{id: $id, name: $name, old_version: $old, new_version: $new, docs: $docs, doc_file: $doc_file, notes: $notes, url: $url}')
+                
+                UPDATES=$(echo "$UPDATES" | jq --argjson update "$UPDATE" '. + [$update]')
+                
+                # Update cache
+                CACHE=$(echo "$CACHE" | jq --arg id "$tool_id" --arg ver "$LATEST_VERSION" '.[$id] = $ver')
+              fi
+            else
+              echo "  ⏭️  No change"
+            fi
+            echo ""
+          done
+          
+          # Save updated cache
+          echo "$CACHE" > .version-cache
+          
+          # Set outputs
+          echo "updates=$(echo "$UPDATES" | jq -c '.')" >> $GITHUB_OUTPUT
+          echo "has_updates=$HAS_UPDATES" >> $GITHUB_OUTPUT
+          
+          echo "=== Summary ==="
+          echo "Has updates: $HAS_UPDATES"
+          echo "Updates: $UPDATES"
+
+      - name: Save version cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: .version-cache
+          key: version-cache-${{ github.run_id }}
+
+  # ===========================================================================
+  # Job 2: Create GitHub issues for updates
+  # ===========================================================================
+  create-issues:
+    needs: check-releases
+    if: needs.check-releases.outputs.has_updates == 'true'
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Create issues for each update
+        env:
+          GH_TOKEN: ${{ github.token }}
+          UPDATES: ${{ needs.check-releases.outputs.updates }}
+        run: |
+          echo "$UPDATES" | jq -c '.[]' | while read -r update; do
+            NAME=$(echo "$update" | jq -r '.name')
+            OLD_VER=$(echo "$update" | jq -r '.old_version')
+            NEW_VER=$(echo "$update" | jq -r '.new_version')
+            DOCS=$(echo "$update" | jq -r '.docs')
+            DOC_FILE=$(echo "$update" | jq -r '.doc_file')
+            NOTES=$(echo "$update" | jq -r '.notes')
+            URL=$(echo "$update" | jq -r '.url')
+            
+            TITLE="[$NAME] Update documentation for v$NEW_VER"
+            
+            BODY=$(cat <<EOF
+          ## Release Update Detected
+          
+          | Field | Value |
+          |-------|-------|
+          | Tool | **$NAME** |
+          | Previous Version | $OLD_VER |
+          | New Version | **$NEW_VER** |
+          | Documentation | [$DOCS]($DOCS) |
+          | Doc File | \`$DOC_FILE\` |
+          | Release URL | $URL |
+          
+          ## Release Notes (excerpt)
+          
+          \`\`\`
+          ${NOTES:0:500}
+          \`\`\`
+          
+          ## Action Required
+          
+          - [ ] Review release notes for breaking changes
+          - [ ] Update \`$DOC_FILE\` with new error patterns
+          - [ ] Add new error codes if applicable
+          - [ ] Update version references in documentation
+          - [ ] Test any new commands or configurations
+          
+          ## Auto-generated
+          
+          This issue was automatically created by the Release Monitor workflow.
+          
+          ---
+          *Generated at: $(date -u +"%Y-%m-%d %H:%M:%S UTC")*
+          EOF
+          )
+            
+            # Check if issue already exists
+            EXISTING=$(gh issue list --search "in:title [$NAME] v$NEW_VER" --json number --jq '.[0].number' || echo "")
+            
+            if [ -z "$EXISTING" ]; then
+              gh issue create \
+                --title "$TITLE" \
+                --body "$BODY" \
+                --label "documentation,upstream-update"
+              echo "Created issue: $TITLE"
+            else
+              echo "Issue already exists: #$EXISTING"
+            fi
+          done
+
+  # ===========================================================================
+  # Job 3: Send Discord notification
+  # ===========================================================================
+  notify-discord:
+    needs: check-releases
+    if: needs.check-releases.outputs.has_updates == 'true' || inputs.notify_test == 'true'
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Send Discord notification
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          UPDATES: ${{ needs.check-releases.outputs.updates }}
+          IS_TEST: ${{ inputs.notify_test }}
+        run: |
+          if [ -z "$DISCORD_WEBHOOK_URL" ]; then
+            echo "Discord webhook not configured, skipping..."
+            exit 0
+          fi
+          
+          if [ "$IS_TEST" = "true" ]; then
+            CONTENT="**[TEST]** Release Monitor is working correctly!"
+            EMBEDS='[]'
+          else
+            CONTENT="**New Tool Releases Detected!**"
+            
+            # Build embeds for each update
+            EMBEDS=$(echo "$UPDATES" | jq -c '[.[] | {
+              title: "\(.name) v\(.new_version)",
+              description: "Updated from v\(.old_version)",
+              url: .url,
+              color: 5814783,
+              fields: [
+                {name: "Documentation", value: .docs, inline: true},
+                {name: "Doc File", value: ("`" + .doc_file + "`"), inline: true}
+              ],
+              footer: {text: "claude-error-prevention"}
+            }]')
+          fi
+          
+          PAYLOAD=$(jq -n \
+            --arg content "$CONTENT" \
+            --argjson embeds "$EMBEDS" \
+            '{content: $content, embeds: $embeds}')
+          
+          curl -H "Content-Type: application/json" \
+            -d "$PAYLOAD" \
+            "$DISCORD_WEBHOOK_URL"
+          
+          echo "Discord notification sent!"
+
+  # ===========================================================================
+  # Job 4: Send Slack notification
+  # ===========================================================================
+  notify-slack:
+    needs: check-releases
+    if: needs.check-releases.outputs.has_updates == 'true'
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Send Slack notification
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          UPDATES: ${{ needs.check-releases.outputs.updates }}
+        run: |
+          if [ -z "$SLACK_WEBHOOK_URL" ]; then
+            echo "Slack webhook not configured, skipping..."
+            exit 0
+          fi
+          
+          # Build blocks for Slack
+          BLOCKS=$(echo "$UPDATES" | jq '[
+            {
+              type: "header",
+              text: {
+                type: "plain_text",
+                text: "New Tool Releases Detected!"
+              }
+            }
+          ] + [.[] | {
+            type: "section",
+            text: {
+              type: "mrkdwn",
+              text: "*\(.name)* v\(.new_version)\nUpdated from v\(.old_version)\n<\(.url)|Release Notes> | <\(.docs)|Documentation>"
+            }
+          }] + [
+            {
+              type: "context",
+              elements: [{
+                type: "mrkdwn",
+                text: "claude-error-prevention | Release Monitor"
+              }]
+            }
+          ]')
+          
+          PAYLOAD=$(jq -n --argjson blocks "$BLOCKS" '{blocks: $blocks}')
+          
+          curl -H "Content-Type: application/json" \
+            -d "$PAYLOAD" \
+            "$SLACK_WEBHOOK_URL"
+          
+          echo "Slack notification sent!"
+
+

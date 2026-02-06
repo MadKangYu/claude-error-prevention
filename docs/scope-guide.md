@@ -38,7 +38,7 @@ These patterns apply to ALL users.
 
 These are specific to certain setups.
 
-### OpenClaw (MadKangYu specific)
+### OpenClaw (Custom Gateway)
 | ID | Issue |
 |----|-------|
 | `openclaw-gateway-down` | Port 18789 |

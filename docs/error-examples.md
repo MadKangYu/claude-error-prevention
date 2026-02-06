@@ -80,15 +80,15 @@ WARN: unknown format "uint64" ignored in schema
 
 ### Unknown Model (NEW)
 ```
-⚠️ Agent failed before reply: Unknown model: anthropic/claude-opus-4-6
+⚠️ Agent failed before reply: Unknown model: anthropic/claude-opus-4-7
 Logs: openclaw logs --follow
 ```
 **Search:** `./error-engine.sh search "unknown model"`  
-**Cause:** Model ID typo (`4-6` should be `4-5`)  
+**Cause:** Model ID typo (non-existent version)  
 **Fix:**
 ```bash
 openclaw models  # Check available
-openclaw config set defaultModel anthropic/claude-opus-4-5
+openclaw config set defaultModel anthropic/claude-opus-4-6
 ```
 
 ---

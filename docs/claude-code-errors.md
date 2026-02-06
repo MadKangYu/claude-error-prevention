@@ -1,0 +1,791 @@
+# Claude Code Error Patterns & Troubleshooting
+
+> Official error patterns and solutions for Claude Code CLI - sourced from Anthropic documentation
+
+```
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                                                                              ║
+║   ██████╗██╗      █████╗ ██╗   ██╗██████╗ ███████╗                           ║
+║  ██╔════╝██║     ██╔══██╗██║   ██║██╔══██╗██╔════╝                           ║
+║  ██║     ██║     ███████║██║   ██║██║  ██║█████╗                             ║
+║  ██║     ██║     ██╔══██║██║   ██║██║  ██║██╔══╝                             ║
+║  ╚██████╗███████╗██║  ██║╚██████╔╝██████╔╝███████╗                           ║
+║   ╚═════╝╚══════╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ╚══════╝                           ║
+║                           ██████╗ ██████╗ ██████╗ ███████╗                   ║
+║                          ██╔════╝██╔═══██╗██╔══██╗██╔════╝                   ║
+║                          ██║     ██║   ██║██║  ██║█████╗                     ║
+║                          ██║     ██║   ██║██║  ██║██╔══╝                     ║
+║                          ╚██████╗╚██████╔╝██████╔╝███████╗                   ║
+║                           ╚═════╝ ╚═════╝ ╚═════╝ ╚══════╝                   ║
+║                                                                              ║
+║   Error Prevention System v3.0 | Patterns: 18 | Source: Official Docs       ║
+║                                                                              ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+```
+
+## Official Documentation Sources
+
+| Resource | URL |
+|----------|-----|
+| Main Docs | https://docs.anthropic.com/en/docs/claude-code |
+| Troubleshooting | https://docs.anthropic.com/en/docs/claude-code/troubleshooting |
+| CLI Reference | https://docs.anthropic.com/en/docs/claude-code/cli-reference |
+| Settings Schema | https://json.schemastore.org/claude-code-settings.json |
+| MCP Documentation | https://docs.anthropic.com/en/docs/claude-code/mcp |
+| GitHub Issues | https://github.com/anthropics/claude-code/issues |
+
+---
+
+## Quick Reference
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                          CLAUDE CODE QUICK FIX                               │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  ERROR                            │ QUICK FIX                                │
+│  ─────────────────────────────────┼────────────────────────────────────────  │
+│  "command not found: claude"      │ Add ~/.local/bin to PATH                 │
+│  "API Error: 500"                 │ Check status.anthropic.com, retry        │
+│  "exec: node: not found" (WSL)    │ Install Node via Linux pkg manager       │
+│  "Sandbox requires socat"         │ apt install bubblewrap socat             │
+│  MCP server "failed"              │ Check stderr, may be false positive      │
+│  Repeated permission prompts      │ Add to permissions.allow in settings     │
+│  Search not working               │ brew install ripgrep                     │
+│  Settings ignored                 │ Check location & JSON syntax             │
+│  Authentication loop              │ rm ~/.config/claude-code/auth.json       │
+│  High memory usage                │ Run /compact, restart session            │
+│  Windows npx MCP fails            │ Use: cmd /c npx -y @package              │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 1. Installation Errors
+
+### 1.1 Windows: Git Bash Required
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ ERROR                                                                        │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  Claude Code on Windows requires git-bash                                    │
+│                                                                              │
+│  Git for Windows (including Git Bash) is not installed or not detected.     │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+**Solution:**
+```powershell
+# Option 1: Install Git for Windows
+# Download from: https://git-scm.com/downloads/win
+
+# Option 2: Set path explicitly
+$env:CLAUDE_CODE_GIT_BASH_PATH="C:\Program Files\Git\bin\bash.exe"
+
+# Option 3: Add to system environment variables permanently
+# System Properties → Environment Variables → Add CLAUDE_CODE_GIT_BASH_PATH
+```
+
+**Source:** [Official Troubleshooting](https://docs.anthropic.com/en/docs/claude-code/troubleshooting)
+
+---
+
+### 1.2 Windows: Command Not Found After Install
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ ERROR                                                                        │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  installMethod is native, but claude command not found                       │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+**Solution:**
+```powershell
+# Add to User PATH
+# 1. Press Win + R, type sysdm.cpl, press Enter
+# 2. Click Advanced → Environment Variables
+# 3. Under "User variables", select Path and click Edit
+# 4. Click New and add: %USERPROFILE%\.local\bin
+# 5. Restart terminal
+
+# Verify installation
+claude doctor
+```
+
+---
+
+### 1.3 WSL: OS/Platform Detection Issues
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ ERROR                                                                        │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  npm ERR! notsup Unsupported platform for @anthropic-ai/claude-code          │
+│  npm ERR! notsup Valid OS: darwin, linux                                     │
+│  npm ERR! notsup Actual OS: win32                                            │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+**Cause:** WSL using Windows npm instead of Linux npm
+
+**Solution:**
+```bash
+# Option 1: Configure npm for Linux
+npm config set os linux
+
+# Option 2: Force installation
+npm install -g @anthropic-ai/claude-code --force --no-os-check
+# DO NOT use sudo
+
+# Option 3: Use native installer (recommended)
+curl -fsSL https://claude.ai/install.sh | bash
+```
+
+---
+
+### 1.4 WSL: Node Not Found
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ ERROR                                                                        │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  exec: node: not found                                                       │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+**Cause:** WSL using Windows Node.js instead of Linux version
+
+**Solution:**
+```bash
+# Check current paths
+which npm
+which node
+# Should point to /usr/... not /mnt/c/...
+
+# Install Node via Linux package manager (Ubuntu/Debian):
+sudo apt update && sudo apt install nodejs npm
+
+# Or use nvm (recommended):
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
+source ~/.bashrc
+nvm install --lts
+```
+
+---
+
+### 1.5 WSL: Sandbox Dependencies Missing
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ ERROR                                                                        │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  Sandbox requires socat and bubblewrap                                       │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+**Solution:**
+```bash
+# Ubuntu/Debian
+sudo apt-get install bubblewrap socat
+
+# Fedora
+sudo dnf install bubblewrap socat
+
+# Note: WSL1 does not support sandboxing
+```
+
+---
+
+### 1.6 Linux/Mac: Permission Errors
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ ERROR                                                                        │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  EACCES: permission denied, mkdir '/usr/local/lib/node_modules'              │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+**Solution (Native Installation - Recommended):**
+```bash
+# macOS, Linux, WSL
+curl -fsSL https://claude.ai/install.sh | bash
+
+# Install specific version
+curl -fsSL https://claude.ai/install.sh | bash -s 1.0.58
+
+# Ensure ~/.local/bin is in PATH
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
+source ~/.bashrc
+```
+
+---
+
+## 2. API & Server Errors
+
+### 2.1 API Error 500 (Internal Server Error)
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ ERROR                                                                        │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  API Error: 500 {"type":"error","error":{"type":"api_error",                 │
+│  "message":"Internal server error"}}                                         │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+**Diagnosis Flow:**
+```
+API Error 500?
+      │
+      ├─▶ Check status.anthropic.com
+      │        │
+      │        ├─▶ Outage? → Wait for resolution
+      │        │
+      │        └─▶ No outage? → Continue debugging
+      │
+      ├─▶ Try different model
+      │        │
+      │        └─▶ claude -p --fallback-model sonnet "query"
+      │
+      └─▶ Switch provider (if configured)
+               │
+               └─▶ AWS Bedrock / Google Vertex AI
+```
+
+**Solution:**
+```bash
+# 1. Check Anthropic status page
+# Visit: https://status.anthropic.com
+
+# 2. Wait and retry (usually resolves within minutes to hours)
+
+# 3. Use fallback model (print mode only)
+claude -p --fallback-model sonnet "your query"
+
+# 4. Switch to AWS Bedrock or Google Vertex AI if configured
+# See: https://docs.anthropic.com/en/docs/claude-code/third-party-integrations
+```
+
+**Recent Outage:** January 22, 2026 - Major service disruption
+
+---
+
+### 2.2 Authentication Failures
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ ERROR                                                                        │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  Authentication failed. Please try logging in again.                         │
+│                                                                              │
+│  Or: Repeated login prompts                                                  │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+**Solution:**
+```bash
+# Step 1: Sign out completely
+/logout
+
+# Step 2: Remove stored auth
+rm -rf ~/.config/claude-code/auth.json
+
+# Step 3: Restart and re-authenticate
+claude
+
+# If browser doesn't open automatically:
+# Press 'c' to copy OAuth URL, then paste in browser
+
+# Step 4: Verify authentication
+claude doctor
+```
+
+---
+
+## 3. MCP Server Errors
+
+### 3.1 MCP Server Shows "Failed" (False Positive)
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ MCP STATUS                                                                   │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  ✓ filesystem    Running                                                     │
+│  ✗ myserver      Failed                                                      │
+│                                                                              │
+│  But the server is actually working...                                       │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+**Cause:** Claude Code treats any stderr output as an error, even for informational messages.
+
+**Solution:**
+```bash
+# Workaround: Redirect stderr in MCP server command
+claude mcp add --transport stdio myserver -- npx -y server 2>/dev/null
+
+# Or configure server to suppress stderr warnings
+# Check server documentation for quiet/silent mode flags
+```
+
+**Source:** [GitHub Issue #17653](https://github.com/anthropics/claude-code/issues/17653)
+
+---
+
+### 3.2 OAuth: Dynamic Client Registration Not Supported
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ ERROR                                                                        │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  Incompatible auth server: does not support dynamic client registration      │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+**Solution:**
+```bash
+# Step 1: Register OAuth app with the server's developer portal
+# Note your client ID, client secret, and redirect URI
+
+# Step 2: Add server with credentials
+claude mcp add --transport http \
+  --client-id your-client-id \
+  --client-secret \
+  --callback-port 8080 \
+  my-server https://mcp.example.com/mcp
+
+# Step 3: Authenticate in Claude Code
+# Run: /mcp
+# Follow browser login flow
+```
+
+---
+
+### 3.3 MCP Environment Variables Not Working
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ ERROR                                                                        │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  MCP server not receiving API_KEY or other environment variables             │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+**Solution:**
+```bash
+# Correct format for stdio servers:
+claude mcp add --transport stdio \
+  --env API_KEY=your_key \
+  --env BASE_URL=https://api.example.com \
+  myserver -- npx -y server-package
+
+# For .mcp.json file:
+{
+  "mcpServers": {
+    "myserver": {
+      "command": "npx",
+      "args": ["-y", "server-package"],
+      "env": {
+        "API_KEY": "${API_KEY}",
+        "BASE_URL": "https://api.example.com"
+      }
+    }
+  }
+}
+
+# Ensure environment variables are exported in shell
+export API_KEY=your_key
+```
+
+---
+
+### 3.4 Windows: npx MCP Servers Fail
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ ERROR                                                                        │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  Connection closed                                                           │
+│  spawn npx ENOENT                                                            │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+**Cause:** Windows cannot directly execute npx without cmd wrapper
+
+**Solution:**
+```bash
+# Correct format for Windows native (not WSL):
+claude mcp add --transport stdio myserver -- cmd /c npx -y @some/package
+
+# Incorrect (will fail):
+claude mcp add --transport stdio myserver -- npx -y @some/package
+```
+
+---
+
+### 3.5 MCP Configuration File Location
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ MCP CONFIGURATION LOCATIONS                                                  │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  ✓ CORRECT:                                                                  │
+│    • User/Local: ~/.claude.json (in mcpServers field)                        │
+│    • Project:    .mcp.json (in project root)                                 │
+│    • Managed:    /Library/Application Support/ClaudeCode/managed-mcp.json    │
+│                                                                              │
+│  ✗ INCORRECT (deprecated):                                                   │
+│    • ~/.config/claude-code/mcp.json                                          │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+**Verify configuration:**
+```bash
+claude mcp list
+claude mcp get <server-name>
+```
+
+---
+
+## 4. Settings.json Errors
+
+### 4.1 JSON Schema Validation
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ ERROR                                                                        │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  Invalid settings.json: Unexpected token '}' at position 123                 │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+**Solution:**
+```json
+// Add schema for validation in VS Code/Cursor:
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": ["Bash(npm run test)"],
+    "deny": ["Read(.env)"]
+  }
+}
+```
+
+**Common mistakes:**
+- ❌ Trailing commas
+- ❌ Single quotes instead of double quotes
+- ❌ Missing brackets/braces
+- ❌ Incorrect setting names
+
+**Verify:**
+```bash
+claude doctor
+```
+
+---
+
+### 4.2 Settings File Priority
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ SETTINGS FILE HIERARCHY (highest to lowest priority)                         │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  SCOPE      │ LOCATION                                                       │
+│  ───────────┼──────────────────────────────────────────────────────────────  │
+│  Managed    │ /Library/Application Support/ClaudeCode/managed-settings.json  │
+│             │ /etc/claude-code/managed-settings.json (Linux)                 │
+│             │ C:\Program Files\ClaudeCode\managed-settings.json (Windows)    │
+│  Command    │ --settings flag                                                │
+│  Local      │ .claude/settings.local.json                                    │
+│  Project    │ .claude/settings.json                                          │
+│  User       │ ~/.claude/settings.json                                        │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 5. Permission Errors
+
+### 5.1 Repeated Permission Prompts
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ SYMPTOM                                                                      │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  Claude keeps asking for permission for the same commands                    │
+│                                                                              │
+│  "Allow Bash(npm run test)?"  [Yes] [No] [Always]                            │
+│  (every single time)                                                         │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+**Solution:**
+```bash
+# In Claude Code:
+/permissions
+
+# Or add to settings.json:
+{
+  "permissions": {
+    "allow": [
+      "Bash(git log *)",
+      "Bash(git diff *)",
+      "Bash(npm run test *)",
+      "Read"
+    ]
+  }
+}
+
+# Use permission modes:
+claude --permission-mode acceptAll  # Accept all (use with caution)
+claude --permission-mode plan       # Plan mode (review before execution)
+```
+
+### 5.2 Permission Rule Patterns
+
+```json
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run *)",           // All npm run commands
+      "Bash(git diff *)",          // All git diff commands
+      "Read(src/**)",              // All files in src/
+      "Edit(src/**/*.ts)",         // TypeScript files in src/
+      "WebFetch(domain:github.com)" // Only GitHub
+    ],
+    "deny": [
+      "Bash(curl *)",              // Block curl
+      "Bash(rm -rf *)",            // Block dangerous rm
+      "Read(.env)",                // Block .env file
+      "Read(.env.*)",              // Block .env.* files
+      "Read(secrets/**)",          // Block secrets directory
+      "WebFetch"                   // Block all web fetching
+    ]
+  }
+}
+```
+
+---
+
+## 6. Performance Issues
+
+### 6.1 High CPU/Memory Usage
+
+**Solution:**
+```bash
+# 1. Compact context regularly
+/compact
+
+# 2. Restart Claude Code between major tasks
+exit
+claude
+
+# 3. Add large directories to permission deny
+{
+  "permissions": {
+    "deny": [
+      "Read(node_modules/**)",
+      "Read(build/**)",
+      "Read(.next/**)"
+    ]
+  }
+}
+
+# 4. Add to .gitignore
+echo "node_modules/" >> .gitignore
+echo "build/" >> .gitignore
+echo "dist/" >> .gitignore
+```
+
+### 6.2 Slow or Incomplete Search
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ SYMPTOM                                                                      │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  Search tool, @file mentions not working or very slow                        │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+**Cause:** System ripgrep not installed
+
+**Solution:**
+```bash
+# macOS (Homebrew)
+brew install ripgrep
+
+# Windows (winget)
+winget install BurntSushi.ripgrep.MSVC
+
+# Ubuntu/Debian
+sudo apt install ripgrep
+
+# Then set environment variable:
+export USE_BUILTIN_RIPGREP=0
+
+# Or in settings.json:
+{
+  "env": {
+    "USE_BUILTIN_RIPGREP": "0"
+  }
+}
+```
+
+---
+
+## 7. IDE Integration Issues
+
+### 7.1 JetBrains IDE Not Detected on WSL2
+
+**Solution:**
+
+**Option 1: Configure Windows Firewall**
+```bash
+# 1. Find WSL2 IP address
+wsl hostname -I
+# Example: 172.21.123.456
+
+# 2. Open PowerShell as Administrator
+New-NetFirewallRule -DisplayName "Allow WSL2 Internal Traffic" `
+  -Direction Inbound -Protocol TCP -Action Allow `
+  -RemoteAddress 172.21.0.0/16 -LocalAddress 172.21.0.0/16
+
+# 3. Restart IDE and Claude Code
+```
+
+**Option 2: Switch to Mirrored Networking**
+```ini
+# Add to .wslconfig in Windows user directory
+[wsl2]
+networkingMode=mirrored
+
+# Then restart WSL
+wsl --shutdown
+```
+
+### 7.2 Escape Key Not Working in JetBrains Terminals
+
+**Solution:**
+```
+1. Go to Settings → Tools → Terminal
+2. Either:
+   - Uncheck "Move focus to the editor with Escape"
+   - OR click "Configure terminal keybindings" 
+     and delete "Switch focus to Editor" shortcut
+3. Apply changes
+```
+
+---
+
+## 8. Diagnostic Commands
+
+```bash
+# Run comprehensive diagnostics
+claude doctor
+
+# Checks:
+# - Installation type and version
+# - Auto-update status
+# - Search functionality (ripgrep)
+# - Invalid settings files
+# - MCP server configuration
+# - Keybinding configuration
+# - Context usage warnings
+# - Plugin and agent loading
+
+# Check MCP server status
+/mcp
+
+# View current settings
+/config
+
+# Check permissions
+/permissions
+
+# View session info
+/info
+
+# Report bugs
+/bug
+```
+
+---
+
+## 9. Reset Configuration
+
+```bash
+# Reset all user settings and state
+rm ~/.claude.json
+rm -rf ~/.claude/
+
+# Reset project-specific settings
+rm -rf .claude/
+rm .mcp.json
+
+# Reset authentication
+rm -rf ~/.config/claude-code/auth.json
+
+# WARNING: This removes all settings, MCP configs, and session history
+```
+
+---
+
+## Related Documentation
+
+| Document | Description |
+|----------|-------------|
+| [OpenCode Errors](./opencode-errors.md) | OpenCode/Crush CLI errors |
+| [Oh My OpenCode Errors](./oh-my-opencode-errors.md) | Plugin errors |
+| [Obsidian Errors](./obsidian-errors.md) | PKM integration |
+| [Ghostty Errors](./ghostty-errors.md) | Terminal emulator |
+
+---
+
+## Changelog
+
+| Version | Date | Changes |
+|---------|------|---------|
+| 3.0 | 2026-02-07 | Initial comprehensive guide from official docs |
+
+---
+
+*Last updated: 2026-02-07 | Source: docs.anthropic.com/en/docs/claude-code*
+*Maintainer: claude-error-prevention | License: MIT*
