@@ -929,6 +929,102 @@
         "manual": true,
         "description": "Check formula name, may need: brew tap <tap-name>"
       }
+    },
+    {
+      "id": "openclaw-telegram-no-response",
+      "tool": "openclaw",
+      "category": "telegram",
+      "keywords": ["telegram", "bot", "no response", "silent", "응답없음"],
+      "detect": {
+        "type": "log-pattern",
+        "pattern": "telegram.*timeout|no response|응답.*없"
+      },
+      "message": "Telegram bot not responding",
+      "severity": "error",
+      "fix": {
+        "manual": true,
+        "description": "Check: gateway health, bot token, webhook config"
+      }
+    },
+    {
+      "id": "openclaw-telegram-token-invalid",
+      "tool": "openclaw",
+      "category": "telegram",
+      "keywords": ["telegram", "token", "invalid", "unauthorized", "401"],
+      "detect": {
+        "type": "log-pattern",
+        "pattern": "401|Unauthorized|invalid token"
+      },
+      "message": "Telegram bot token invalid or expired",
+      "severity": "error",
+      "fix": {
+        "manual": true,
+        "description": "Regenerate token at @BotFather"
+      }
+    },
+    {
+      "id": "openclaw-telegram-webhook-fail",
+      "tool": "openclaw",
+      "category": "telegram",
+      "keywords": ["telegram", "webhook", "fail", "ssl", "https"],
+      "detect": {
+        "type": "log-pattern",
+        "pattern": "webhook.*fail|ssl.*error|https.*required"
+      },
+      "message": "Telegram webhook configuration failed",
+      "severity": "error",
+      "fix": {
+        "manual": true,
+        "description": "Webhook requires HTTPS with valid SSL certificate"
+      }
+    },
+    {
+      "id": "korean-ambiguous-delete",
+      "tool": "system",
+      "category": "korean-error",
+      "keywords": ["정리", "지워", "삭제", "delete", "clean", "ambiguous"],
+      "detect": {
+        "type": "language-pattern",
+        "pattern": "정리|지워|없애|치워|비워"
+      },
+      "message": "Ambiguous Korean command - could mean delete or organize",
+      "severity": "warning",
+      "fix": {
+        "manual": true,
+        "description": "ASK: 삭제? 정돈? (Delete or organize?)"
+      }
+    },
+    {
+      "id": "korean-implicit-fix",
+      "tool": "system",
+      "category": "korean-error",
+      "keywords": ["안돼", "이상해", "문제", "에러", "implicit"],
+      "detect": {
+        "type": "language-pattern",
+        "pattern": "안돼|안됨|이상해|문제있|에러나"
+      },
+      "message": "Implicit fix request - user expects full resolution",
+      "severity": "info",
+      "fix": {
+        "manual": true,
+        "description": "Find + Fix + Test + Verify (not just diagnose)"
+      }
+    },
+    {
+      "id": "korean-dangerous-scope",
+      "tool": "system",
+      "category": "korean-error",
+      "keywords": ["다", "전부", "싹", "밀어", "초기화", "dangerous"],
+      "detect": {
+        "type": "language-pattern",
+        "pattern": "다 지워|싹 밀|초기화|리셋"
+      },
+      "message": "Dangerous scope command - potential data loss",
+      "severity": "error",
+      "fix": {
+        "manual": true,
+        "description": "STOP - Confirm scope, list affected items, require explicit approval"
+      }
     }
   ]
 }

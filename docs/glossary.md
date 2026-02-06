@@ -115,6 +115,138 @@ When uncertain, respond with:
 
 ---
 
+## Korean Error Patterns (한국어 에러 패턴)
+
+### Pattern: Vague Requests Leading to Wrong Actions
+
+| User Says | AI Misunderstands | Correct Action |
+|-----------|-------------------|----------------|
+| "정리 좀 해줘" | Deletes files | ASK: 구조화? 삭제? |
+| "깔끔하게 해줘" | Removes code | ASK: 포맷팅? 삭제? |
+| "없애줘" | Deletes permanently | ASK: 숨기기? 삭제? |
+| "치워줘" | Removes everything | ASK: 이동? 삭제? |
+| "비워줘" | Clears all data | ASK: 초기화? 삭제? |
+
+### Pattern: Implicit "Fix Everything"
+
+| User Says | Literal | Real Expectation |
+|-----------|---------|------------------|
+| "에러 나" | "There's an error" | Find + Fix + Verify |
+| "안 돼" | "It doesn't work" | Diagnose + Fix + Test |
+| "이상해" | "It's strange" | Investigate + Explain + Fix |
+| "왜 이래" | "Why is it like this" | Root cause + Fix + Prevent |
+| "문제 있어" | "There's a problem" | Find all issues + Fix all |
+
+### Pattern: Abbreviations and Slang
+
+| Slang | Meaning | Context |
+|-------|---------|---------|
+| "ㄱㄱ" | Go go (proceed) | Start the task |
+| "ㅇㅇ" | Yes/OK | Confirmation |
+| "ㄴㄴ" | No no | Rejection |
+| "ㅇㅋ" | OK | Approval |
+| "ㄷㄷ" | Surprised/shocked | Something unexpected |
+| "ㅠㅠ" / "ㅜㅜ" | Crying/sad | Frustrated, needs help |
+| "ㅎㅎ" | Laughing | Casual/friendly |
+| "ㄱㅅ" | Thanks (감사) | Appreciation |
+| "ㅈㅅ" | Sorry (죄송) | Apology |
+
+### Pattern: Context-Dependent Commands
+
+| Command | Context A | Context B |
+|---------|-----------|-----------|
+| "돌려" | Code context → Run/Execute | Git context → Revert |
+| "올려" | File context → Upload | Git context → Push |
+| "내려" | File context → Download | Git context → Pull |
+| "합쳐" | File context → Merge files | Git context → Merge branch |
+| "나눠" | File context → Split | Logic context → Separate |
+
+### Pattern: Frustration Signals
+
+| Signal | Meaning | Response |
+|--------|---------|----------|
+| "아..." | Disappointment | Previous attempt failed |
+| "에이" | Frustration | Try different approach |
+| "아니" at start | Correction coming | Listen for what's wrong |
+| "그게 아니라" | "That's not it" | Misunderstood, clarify |
+| "됐고" | "Forget it" | Move on, but still wants result |
+| "일단" | "For now" | Quick fix needed, proper fix later |
+
+### Pattern: Quantity Misunderstandings
+
+| Korean | AI Interprets | Actually Means |
+|--------|---------------|----------------|
+| "몇 개" (a few) | 2-3 | 3-10 depending on context |
+| "좀" (some/a little) | Small amount | Appropriate amount |
+| "많이" (a lot) | Maximum | More than current |
+| "조금" (a little) | Minimal | Small but noticeable |
+| "전부" (all) | 100% everything | All relevant items |
+| "대충" (roughly) | Sloppy work | Quick but functional |
+
+### Pattern: Time-Related Confusion
+
+| Korean | Literal | Actual Expectation |
+|--------|---------|-------------------|
+| "빨리" (quickly) | ASAP | Prioritize speed over perfection |
+| "천천히" (slowly) | Take time | Be careful, thorough |
+| "나중에" (later) | Postpone | Not now, but don't forget |
+| "잠깐" (for a moment) | Brief pause | Quick check/action |
+| "계속" (continue) | Keep going | Don't stop until done |
+
+### Pattern: Scope Creep Indicators
+
+| User Says | Hidden Meaning |
+|-----------|----------------|
+| "그리고" (and) | More tasks coming |
+| "아 그리고" (oh and) | Forgot to mention earlier |
+| "근데" (but) | Exception/condition follows |
+| "참고로" (FYI) | Important context |
+| "혹시" (by any chance) | Optional but desired |
+
+### Pattern: Dangerous Phrases
+
+| Phrase | Risk | Action |
+|--------|------|--------|
+| "다 지워" | Mass deletion | CONFIRM: 정말 전부요? |
+| "싹 다" | Everything | CONFIRM: 범위 확인 |
+| "리셋해" | Factory reset | CONFIRM: 백업 필요? |
+| "초기화해" | Initialize/Reset | CONFIRM: 데이터 손실? |
+| "밀어버려" | Wipe clean | STOP: 복구 불가 경고 |
+
+---
+
+## Error Prevention Rules for Korean Users
+
+### Rule 1: Deletion Confirmation
+```
+User: "정리해줘"
+AI: "정리 방식을 확인합니다:
+     1. 구조화/정돈 (파일 유지)
+     2. 불필요한 항목 삭제
+     어떤 방식을 원하시나요?"
+```
+
+### Rule 2: Scope Clarification
+```
+User: "다 바꿔"
+AI: "변경 범위를 확인합니다:
+     - 현재 파일만
+     - 현재 폴더 전체
+     - 프로젝트 전체
+     어디까지 적용할까요?"
+```
+
+### Rule 3: Implicit to Explicit
+```
+User: "안 돼"
+AI: "어떤 문제가 있는지 확인하겠습니다:
+     1. 에러 메시지가 있나요?
+     2. 예상과 다른 동작인가요?
+     3. 아무 반응이 없나요?"
+```
+
+---
+
 ## Installation / 설치
 
 | Korean | English | Context |
