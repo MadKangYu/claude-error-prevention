@@ -861,6 +861,139 @@ echo "=== Health Check Complete ==="
 
 ---
 
+## 13. Self-Healing System (Karpathy Approach)
+
+> *"에러 발생 후 고치지 말고, 발생 전에 막아라"* — Andrej Karpathy
+
+### 13.1 Critical Discovery: False Positive OAuth Errors
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ ⚠️ CRITICAL: OAuth errors are often FALSE POSITIVES!                         │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  ERROR SHOWN:                                                                │
+│  FailoverError: OAuth token refresh failed for anthropic                     │
+│                                                                              │
+│  ACTUAL CAUSE:                                                               │
+│  WebSocket channel is dead (HTTP may still be OK)                            │
+│                                                                              │
+│  DIAGNOSTIC ORDER (MECE):                                                    │
+│  1. Process: launchctl list | grep openclaw                                  │
+│  2. HTTP: curl -sf http://localhost:18789/health                             │
+│  3. WS: timeout 5 openclaw gateway health                                    │
+│                                                                              │
+│  If HTTP OK but WS fails → Gateway restart needed                            │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+### 13.2 WebSocket vs HTTP
+
+| Protocol | Type | Behavior | Check Command |
+|----------|------|----------|---------------|
+| HTTP | Stateless | Each request independent | `curl -sf localhost:18789/health` |
+| WebSocket | Stateful | Connection state maintained | `timeout 5 openclaw gateway health` |
+
+**Why HTTP OK but WS fails:**
+- HTTP handler and WS handler are separate
+- Long-running Gateway → WS handler can become unstable
+- HTTP continues working, but WS channel is dead
+
+---
+
+### 13.3 Reliable Gateway Restart
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ ❌ UNRELIABLE: openclaw gateway restart                                      │
+│    - Returns "succeeded" but may not actually restart                        │
+│    - Fails silently when service is unloaded                                 │
+│                                                                              │
+│ ✅ RELIABLE: launchctl unload && load                                        │
+│    - Always works                                                            │
+│    - Verified through actual testing                                         │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+**Reliable restart command:**
+```bash
+launchctl unload ~/Library/LaunchAgents/ai.openclaw.gateway.plist 2>/dev/null
+sleep 2
+launchctl load ~/Library/LaunchAgents/ai.openclaw.gateway.plist
+```
+
+---
+
+### 13.4 Automated Self-Healing Setup
+
+**Health Check Script:** `~/.claude/scripts/openclaw-healthcheck.sh`
+
+```bash
+#!/bin/bash
+# OpenClaw Self-Healing (10-minute interval via launchd)
+
+LOG_FILE="$HOME/.cache/openclaw-health/health.log"
+mkdir -p "$(dirname "$LOG_FILE")"
+
+log() { echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" | tee -a "$LOG_FILE"; }
+
+# MECE Layer checks
+check_process() {
+    launchctl list 2>/dev/null | grep -q "ai.openclaw.gateway"
+}
+
+check_http() {
+    curl -sf http://127.0.0.1:18789/health >/dev/null 2>&1
+}
+
+check_ws() {
+    timeout 10 openclaw gateway health >/dev/null 2>&1
+}
+
+recover() {
+    log "🔄 Auto-recovering Gateway..."
+    launchctl unload ~/Library/LaunchAgents/ai.openclaw.gateway.plist 2>/dev/null
+    sleep 2
+    launchctl load ~/Library/LaunchAgents/ai.openclaw.gateway.plist
+    
+    for i in 5 10 15 20 25 30; do
+        sleep 5
+        if check_http && check_ws; then
+            log "✅ Recovery success (${i}s)"
+            return 0
+        fi
+    done
+    log "❌ Recovery failed"
+    return 1
+}
+
+# Main
+log "--- Health Check ---"
+check_process || { log "❌ Process down"; recover; exit $?; }
+check_http    || { log "❌ HTTP down"; recover; exit $?; }
+check_ws      || { log "❌ WS down"; recover; exit $?; }
+log "✅ All healthy"
+```
+
+**launchd plist:** `~/Library/LaunchAgents/com.kangyu.openclaw-healthcheck.plist`
+
+---
+
+### 13.5 Lessons Learned
+
+| Lesson | Description |
+|--------|-------------|
+| **HTTP OK ≠ System OK** | HTTP stateless, WS stateful - check both |
+| **Error messages lie** | OAuth error was actually WS dead |
+| **Timeout increase doesn't help** | If time isn't the problem |
+| **Official commands can fail** | `openclaw gateway restart` vs `launchctl load` |
+| **Test, don't assume** | "Should work" ≠ "Does work" |
+
+---
+
 ## Related Documentation
 
 | Document | Description |

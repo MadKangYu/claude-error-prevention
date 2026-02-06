@@ -1336,6 +1336,80 @@
       }
     },
     {
+      "id": "openclaw-ws-timeout",
+      "tool": "openclaw",
+      "category": "gateway",
+      "keywords": [
+        "websocket",
+        "ws",
+        "timeout",
+        "30000ms",
+        "60000ms",
+        "gateway",
+        "ws://127.0.0.1:18789"
+      ],
+      "detect": {
+        "type": "log-pattern",
+        "pattern": "gateway timeout after \\d+ms|ws://127.0.0.1:18789"
+      },
+      "message": "Gateway WebSocket timeout (HTTP may be OK, but WS is dead)",
+      "severity": "error",
+      "fix": {
+        "command": "launchctl unload ~/Library/LaunchAgents/ai.openclaw.gateway.plist 2>/dev/null; sleep 2; launchctl load ~/Library/LaunchAgents/ai.openclaw.gateway.plist && echo '✅ Gateway restarted via launchctl'",
+        "description": "Restart Gateway via launchctl (more reliable than openclaw gateway restart)",
+        "verify": "curl -sf http://localhost:18789/health && timeout 5 openclaw gateway health",
+        "docs_url": "https://docs.openclaw.ai/cli/gateway"
+      }
+    },
+    {
+      "id": "openclaw-oauth-false-positive",
+      "tool": "openclaw",
+      "category": "gateway",
+      "keywords": [
+        "oauth",
+        "token",
+        "refresh",
+        "failed",
+        "FailoverError",
+        "false positive"
+      ],
+      "detect": {
+        "type": "log-pattern",
+        "pattern": "OAuth token refresh failed|FailoverError.*OAuth"
+      },
+      "message": "OAuth error may be FALSE POSITIVE - check WebSocket first!",
+      "severity": "warning",
+      "fix": {
+        "command": "echo '⚠️ OAuth error is often a FALSE POSITIVE!' && echo '' && echo '🔍 Check WebSocket first (MECE order):' && echo '1. Process: launchctl list | grep openclaw' && echo '2. HTTP: curl -sf http://localhost:18789/health' && echo '3. WS: timeout 5 openclaw gateway health' && echo '' && echo '💡 If HTTP OK but WS fails → Gateway restart needed:' && echo 'launchctl unload ~/Library/LaunchAgents/ai.openclaw.gateway.plist' && echo 'sleep 2' && echo 'launchctl load ~/Library/LaunchAgents/ai.openclaw.gateway.plist'",
+        "description": "OAuth errors often mask WebSocket issues - diagnose infrastructure first",
+        "verify": "timeout 5 openclaw gateway health"
+      }
+    },
+    {
+      "id": "openclaw-gateway-restart-fail",
+      "tool": "openclaw",
+      "category": "gateway",
+      "keywords": [
+        "gateway",
+        "restart",
+        "fail",
+        "unload",
+        "launchctl",
+        "succeeded but"
+      ],
+      "detect": {
+        "type": "log-pattern",
+        "pattern": "Gateway restart.*succeeded|restart command succeeded"
+      },
+      "message": "openclaw gateway restart may silently fail when service is unloaded",
+      "severity": "warning",
+      "fix": {
+        "command": "echo '⚠️ openclaw gateway restart can SILENTLY FAIL!' && echo '' && echo '❌ Problem: Returns \"succeeded\" but Gateway not actually running' && echo '✅ Solution: Use launchctl directly (more reliable):' && echo '' && echo 'launchctl unload ~/Library/LaunchAgents/ai.openclaw.gateway.plist 2>/dev/null' && echo 'sleep 2' && echo 'launchctl load ~/Library/LaunchAgents/ai.openclaw.gateway.plist' && echo '' && echo '🔍 Verify: curl -sf http://localhost:18789/health'",
+        "description": "Use launchctl load/unload instead of openclaw gateway restart",
+        "verify": "curl -sf http://localhost:18789/health && echo 'Gateway OK'"
+      }
+    },
+    {
       "id": "korean-ambiguous-delete",
       "tool": "system",
       "category": "korean-error",
