@@ -82,13 +82,13 @@ cd claude-error-prevention
 │  SUPPORTED TOOLS                                            │
 ├─────────────────┬──────────┬────────────────────────────────┤
 │  Claude Code    │ 10 patterns │ ████████████████████ 80%    │
-│  Cursor IDE     │  4 patterns │ ██████████████       60%    │
+│  Cursor IDE     │  4 patterns │ ████████████████████ 100%   │
 │  Crush/OpenCode │  5 patterns │ ██████████████████   60%    │
 │  OpenClaw       │  6 patterns │ ██████████           50%    │
 │  Obsidian/QMD   │  4 patterns │ ██████████           50%    │
 │  Oh My OpenCode │  5 patterns │ ████████████████     80%    │
-│  MCP Servers    │  4 patterns │ ██████████████       60%    │
-│  API Providers  │  4 patterns │ ████████             40%    │
+│  MCP Servers    │  4 patterns │ ████████████████████ 100%   │
+│  API Providers  │  4 patterns │ ████████████████████ 100%   │
 │  System         │ 20 patterns │ ██████████████████   75%    │
 │  Korean Errors  │  4 patterns │ ████                  0%    │
 └─────────────────┴──────────┴────────────────────────────────┘

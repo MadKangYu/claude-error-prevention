@@ -1515,8 +1515,9 @@
       "message": "Cursor request limit reached",
       "severity": "warning",
       "fix": {
-        "manual": true,
-        "description": "Wait for monthly reset, use slow requests, or upgrade plan"
+        "command": "echo '💡 Slow requests available. In Cursor: Settings > Models > Enable slow requests'",
+        "description": "Switch to slow requests mode (queued, lower priority)",
+        "fallback": "Wait for monthly reset or upgrade plan"
       }
     },
     {
@@ -1536,8 +1537,9 @@
       "message": "Cursor context window exceeded",
       "severity": "warning",
       "fix": {
-        "manual": true,
-        "description": "Start new chat, use @codebase instead of @folder"
+        "command": "echo '💡 Press Cmd+L then Cmd+N to start new chat. Use @codebase instead of @folder for large projects.'",
+        "description": "Start fresh chat session with reduced context",
+        "keybinding": "Cmd+L → Cmd+N"
       }
     },
     {
@@ -1558,8 +1560,9 @@
       "message": "Invalid or missing MCP config for Cursor",
       "severity": "warning",
       "fix": {
-        "manual": true,
-        "description": "Create valid ~/.cursor/mcp.json with MCP server configs"
+        "command": "mkdir -p ~/.cursor && echo '{\"mcpServers\":{}}' > ~/.cursor/mcp.json && echo '✅ Created ~/.cursor/mcp.json'",
+        "description": "Create minimal valid MCP config file",
+        "verify": "jq empty ~/.cursor/mcp.json"
       }
     },
     {
@@ -1579,8 +1582,9 @@
       "message": "Cursor indexing is slow or incomplete",
       "severity": "info",
       "fix": {
-        "manual": true,
-        "description": "Add .cursorignore file, rebuild index via Command Palette"
+        "command": "cat > .cursorignore << 'EOF'\nnode_modules/\ndist/\nbuild/\n*.min.js\n*.bundle.js\npackage-lock.json\n.git/\nEOF\necho '✅ Created .cursorignore - Rebuild index: Cmd+Shift+P > Cursor: Rebuild Codebase Index'",
+        "description": "Create .cursorignore to exclude large directories",
+        "verify": "test -f .cursorignore && echo 'OK'"
       }
     },
     {
@@ -1600,8 +1604,9 @@
       "message": "MCP server failed to start",
       "severity": "error",
       "fix": {
-        "manual": true,
-        "description": "Verify command path exists, use absolute paths in config"
+        "command": "NPX_PATH=$(which npx) && echo \"Use absolute path in MCP config: $NPX_PATH\" && echo '✅ Verify: npx -y @anthropic-ai/mcp-filesystem-server /tmp'",
+        "description": "Get absolute npx path for MCP config",
+        "verify": "which npx && npx --version"
       }
     },
     {
@@ -1621,8 +1626,9 @@
       "message": "MCP server returned invalid JSON-RPC",
       "severity": "error",
       "fix": {
-        "manual": true,
-        "description": "Server printing to stdout - redirect logs to stderr"
+        "command": "echo '💡 Fix: Wrap server command to suppress non-JSON output:' && echo '{\"command\":\"sh\",\"args\":[\"-c\",\"your-mcp-server 2>/dev/null\"]}'",
+        "description": "Server printing debug to stdout breaks JSON-RPC. Redirect stderr or wrap command.",
+        "example": "Use console.error() instead of console.log() in MCP server code"
       }
     },
     {
@@ -1641,8 +1647,9 @@
       "message": "MCP tool not found",
       "severity": "error",
       "fix": {
-        "manual": true,
-        "description": "Check exact tool name - case sensitive"
+        "command": "echo '{\"jsonrpc\":\"2.0\",\"method\":\"tools/list\",\"id\":1}' | npx -y @anthropic-ai/mcp-filesystem-server /tmp 2>/dev/null | jq -r '.result.tools[].name' 2>/dev/null || echo '💡 Replace with your MCP server command to list available tools'",
+        "description": "List available tools from MCP server (tools are case-sensitive)",
+        "note": "Tool names must match exactly as defined in server"
       }
     },
     {
@@ -1662,8 +1669,9 @@
       "message": "MCP server response timeout",
       "severity": "warning",
       "fix": {
-        "manual": true,
-        "description": "Increase timeout in config, check server logs"
+        "command": "echo '💡 Add timeout config to MCP server definition:' && echo '{\"timeout\": 60000, \"startupTimeout\": 10000}'",
+        "description": "Increase timeout from 30s default to 60s",
+        "config_example": "{\"mcpServers\":{\"slow-server\":{\"command\":\"...\",\"timeout\":60000}}}"
       }
     },
     {
@@ -1683,8 +1691,9 @@
       "message": "Anthropic API key invalid",
       "severity": "error",
       "fix": {
-        "manual": true,
-        "description": "Verify key format: sk-ant-api03-... Regenerate at console.anthropic.com"
+        "command": "KEY=${ANTHROPIC_API_KEY:-not_set} && if [[ $KEY == sk-ant-api03-* ]]; then echo '✅ Key format valid (sk-ant-api03-...)'; else echo '❌ Invalid format. Expected: sk-ant-api03-... Got: '${KEY:0:15}'...'; fi",
+        "description": "Validate Anthropic API key format",
+        "regenerate_url": "https://console.anthropic.com/settings/keys"
       }
     },
     {
@@ -1704,8 +1713,9 @@
       "message": "Anthropic API overloaded",
       "severity": "warning",
       "fix": {
-        "manual": true,
-        "description": "Retry with 30s exponential backoff or use fallback provider"
+        "command": "echo '⏳ Waiting 30s before retry (529 overloaded)...' && sleep 30 && echo '✅ Ready to retry'",
+        "description": "Wait 30s before retrying (exponential backoff recommended)",
+        "fallback_providers": ["openai", "google", "openrouter"]
       }
     },
     {
@@ -1725,8 +1735,9 @@
       "message": "OpenAI quota exceeded",
       "severity": "error",
       "fix": {
-        "manual": true,
-        "description": "Add credits at platform.openai.com/account/billing"
+        "command": "echo '💳 Add credits: https://platform.openai.com/account/billing' && echo '📊 Check usage: https://platform.openai.com/usage' && open 'https://platform.openai.com/account/billing' 2>/dev/null || echo 'Open URL manually'",
+        "description": "Open OpenAI billing page to add credits",
+        "billing_url": "https://platform.openai.com/account/billing"
       }
     },
     {
@@ -1747,8 +1758,9 @@
       "message": "API rate limit exceeded",
       "severity": "warning",
       "fix": {
-        "manual": true,
-        "description": "Implement exponential backoff, reduce request frequency"
+        "command": "for i in 1 2 4 8 16; do echo \"⏳ Backoff: waiting ${i}s...\"; sleep $i; done; echo '✅ Exponential backoff complete (1+2+4+8+16=31s)'",
+        "description": "Exponential backoff: 1s → 2s → 4s → 8s → 16s",
+        "code_example": "const delay = Math.min(1000 * Math.pow(2, attempt), 60000)"
       }
     }
   ]

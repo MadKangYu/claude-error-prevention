@@ -1,5 +1,30 @@
 # Common Error Patterns (Lessons Learned)
 
+> AI 에이전트 개발 중 학습한 일반적인 에러 패턴과 교훈
+
+```
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                                                                              ║
+║   ██╗     ███████╗███████╗███████╗ ██████╗ ███╗   ██╗███████╗                ║
+║   ██║     ██╔════╝██╔════╝██╔════╝██╔═══██╗████╗  ██║██╔════╝                ║
+║   ██║     █████╗  ███████╗███████╗██║   ██║██╔██╗ ██║███████╗                ║
+║   ██║     ██╔══╝  ╚════██║╚════██║██║   ██║██║╚██╗██║╚════██║                ║
+║   ███████╗███████╗███████║███████║╚██████╔╝██║ ╚████║███████║                ║
+║   ╚══════╝╚══════╝╚══════╝╚══════╝ ╚═════╝ ╚═╝  ╚═══╝╚══════╝                ║
+║                    ██╗     ███████╗ █████╗ ██████╗ ███╗   ██╗███████╗██████╗ ║
+║                    ██║     ██╔════╝██╔══██╗██╔══██╗████╗  ██║██╔════╝██╔══██╗║
+║                    ██║     █████╗  ███████║██████╔╝██╔██╗ ██║█████╗  ██║  ██║║
+║                    ██║     ██╔══╝  ██╔══██║██╔══██╗██║╚██╗██║██╔══╝  ██║  ██║║
+║                    ███████╗███████╗██║  ██║██║  ██║██║ ╚████║███████╗██████╔╝║
+║                    ╚══════╝╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝╚══════╝╚═════╝ ║
+║                                                                              ║
+║   Error Prevention System v3.1 | Category: Meta-Learning                    ║
+║                                                                              ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+```
+
+---
+
 ## 1. Documentation Errors
 
 | Error | Example | Fix |
@@ -79,3 +104,28 @@
 - [ ] 실제 명령어 출력 제시
 - [ ] "100%" 표현 사용 안 함
 - [ ] 검증 방법 명시
+
+---
+
+## Related Documentation
+
+| Document | Description |
+|----------|-------------|
+| [Claude Code Errors](./claude-code-errors.md) | Claude Code CLI errors |
+| [MCP Server Errors](./mcp-server-errors.md) | MCP protocol errors |
+| [Provider Errors](./provider-errors.md) | API provider errors |
+| [Korean Errors](./korean-errors.md) | Korean user patterns |
+| [Installation Guide](./installation.md) | Installation procedures |
+
+---
+
+## Changelog
+
+| Version | Date | Changes |
+|---------|------|---------|
+| 3.1 | 2026-02-07 | Added cross-references, header |
+| 1.0 | 2026-02-06 | Initial lessons learned |
+
+---
+
+*Last updated: 2026-02-07 | Maintainer: claude-error-prevention*

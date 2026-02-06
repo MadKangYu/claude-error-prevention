@@ -1,5 +1,22 @@
 # Korean User Error Patterns
 
+> AI 에이전트가 한국어 사용자와 작업할 때 발생하는 에러 패턴
+
+```
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                                                                              ║
+║   ██╗  ██╗ ██████╗ ██████╗ ███████╗ █████╗ ███╗   ██╗                        ║
+║   ██║ ██╔╝██╔═══██╗██╔══██╗██╔════╝██╔══██╗████╗  ██║                        ║
+║   █████╔╝ ██║   ██║██████╔╝█████╗  ███████║██╔██╗ ██║                        ║
+║   ██╔═██╗ ██║   ██║██╔══██╗██╔══╝  ██╔══██║██║╚██╗██║                        ║
+║   ██║  ██╗╚██████╔╝██║  ██║███████╗██║  ██║██║ ╚████║                        ║
+║   ╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝╚═╝  ╚═══╝                        ║
+║                                                                              ║
+║   Error Prevention System v3.1 | Patterns: 4 | Language: Korean             ║
+║                                                                              ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+```
+
 English-based documentation with Korean error examples in comments.
 
 ---
@@ -196,3 +213,28 @@ English-based documentation with Korean error examples in comments.
 | 다 | MEDIUM | Clarify scope |
 | 초기화 | HIGH | Backup warning |
 | 밀어 | HIGH | Full stop, confirm |
+
+---
+
+## Related Documentation
+
+| Document | Description |
+|----------|-------------|
+| [Claude Code Errors](./claude-code-errors.md) | Claude Code CLI errors |
+| [Oh My OpenCode Errors](./oh-my-opencode-errors.md) | Oh My OpenCode plugin |
+| [OpenClaw Errors](./openclaw-errors.md) | Telegram bot integration |
+| [Common Errors](./common-errors.md) | Lessons learned patterns |
+| [Glossary](./glossary.md) | Korean → English terms |
+
+---
+
+## Changelog
+
+| Version | Date | Changes |
+|---------|------|---------|
+| 3.1 | 2026-02-07 | Added cross-references, header |
+| 1.0 | 2026-02-06 | Initial patterns |
+
+---
+
+*Last updated: 2026-02-07 | Maintainer: claude-error-prevention*
