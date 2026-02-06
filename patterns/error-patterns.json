@@ -1,0 +1,181 @@
+{
+  "$schema": "error-patterns-v1",
+  "version": "2026.02.07",
+  "patterns": [
+    {
+      "id": "claude-duplicate-install",
+      "tool": "claude-code",
+      "category": "installation",
+      "detect": {
+        "command": "which -a claude 2>/dev/null | wc -l",
+        "condition": "gt",
+        "value": 1
+      },
+      "message": "Multiple Claude Code installations found",
+      "severity": "error",
+      "fix": {
+        "command": "npm -g uninstall @anthropic-ai/claude-code",
+        "description": "Remove deprecated npm installation"
+      }
+    },
+    {
+      "id": "claude-npm-deprecated",
+      "tool": "claude-code",
+      "category": "installation",
+      "detect": {
+        "command": "npm list -g @anthropic-ai/claude-code 2>/dev/null | grep -c claude-code || echo 0",
+        "condition": "gt",
+        "value": 0
+      },
+      "message": "Deprecated npm installation exists",
+      "severity": "error",
+      "fix": {
+        "command": "npm -g uninstall @anthropic-ai/claude-code",
+        "description": "Remove npm installation, use native"
+      }
+    },
+    {
+      "id": "claude-settings-schema",
+      "tool": "claude-code",
+      "category": "config",
+      "detect": {
+        "command": "jq -r '.\"$schema\" // \"missing\"' ~/.claude/settings.json 2>/dev/null",
+        "condition": "neq",
+        "value": "https://json.schemastore.org/claude-code-settings.json"
+      },
+      "message": "Invalid or missing $schema in settings.json",
+      "severity": "error",
+      "fix": {
+        "command": "jq '.\"$schema\" = \"https://json.schemastore.org/claude-code-settings.json\"' ~/.claude/settings.json > /tmp/s.json && mv /tmp/s.json ~/.claude/settings.json",
+        "description": "Set correct schema URL"
+      }
+    },
+    {
+      "id": "claude-deprecated-mcp-location",
+      "tool": "claude-code",
+      "category": "config",
+      "detect": {
+        "command": "test -f ~/.mcp.json && echo 1 || echo 0",
+        "condition": "eq",
+        "value": 1
+      },
+      "message": "Deprecated ~/.mcp.json exists",
+      "severity": "warning",
+      "fix": {
+        "command": "echo 'Move MCP config to ~/.claude/claude_code_config.json'",
+        "description": "Migrate to correct location"
+      }
+    },
+    {
+      "id": "claude-invalid-json-settings",
+      "tool": "claude-code",
+      "category": "config",
+      "detect": {
+        "command": "jq empty ~/.claude/settings.json 2>&1 && echo 0 || echo 1",
+        "condition": "eq",
+        "value": 1
+      },
+      "message": "Invalid JSON in settings.json",
+      "severity": "error",
+      "fix": {
+        "manual": true,
+        "description": "Manually fix JSON syntax errors"
+      }
+    },
+    {
+      "id": "claude-invalid-json-mcp",
+      "tool": "claude-code",
+      "category": "config",
+      "detect": {
+        "command": "test -f ~/.claude/claude_code_config.json && (jq empty ~/.claude/claude_code_config.json 2>&1 && echo 0 || echo 1) || echo skip",
+        "condition": "eq",
+        "value": 1
+      },
+      "message": "Invalid JSON in claude_code_config.json",
+      "severity": "error",
+      "fix": {
+        "manual": true,
+        "description": "Manually fix JSON syntax errors"
+      }
+    },
+    {
+      "id": "opencode-uint64-schema",
+      "tool": "opencode",
+      "category": "schema",
+      "detect": {
+        "type": "log-pattern",
+        "pattern": "unknown format \"uint64\" ignored"
+      },
+      "message": "MCP schema uses non-standard uint64 format",
+      "severity": "info",
+      "fix": {
+        "action": "ignore",
+        "description": "Warning only, can be safely ignored"
+      }
+    },
+    {
+      "id": "opencode-no-provider",
+      "tool": "opencode",
+      "category": "config",
+      "detect": {
+        "command": "test -f ~/.config/opencode/opencode.json && jq -r '.provider // .providers | keys | length' ~/.config/opencode/opencode.json 2>/dev/null || echo 0",
+        "condition": "eq",
+        "value": 0
+      },
+      "message": "No AI provider configured",
+      "severity": "warning",
+      "fix": {
+        "command": "opencode",
+        "description": "Run /connect to configure provider"
+      }
+    },
+    {
+      "id": "openclaw-gateway-down",
+      "tool": "openclaw",
+      "category": "service",
+      "detect": {
+        "command": "curl -sf http://localhost:18789/health >/dev/null 2>&1 && echo 0 || echo 1",
+        "condition": "eq",
+        "value": 1
+      },
+      "message": "OpenClaw gateway not responding",
+      "severity": "warning",
+      "fix": {
+        "command": "launchctl start openclaw.gateway 2>/dev/null || echo 'Start gateway manually'",
+        "description": "Start gateway service"
+      }
+    },
+    {
+      "id": "openclaw-env-exposed",
+      "tool": "openclaw",
+      "category": "security",
+      "detect": {
+        "command": "test -f ~/.openclaw/.env && echo 1 || echo 0",
+        "condition": "eq",
+        "value": 1
+      },
+      "message": ".env file in OpenClaw directory - potential token leak",
+      "severity": "error",
+      "fix": {
+        "command": "mv ~/.openclaw/.env ~/.openclaw/.env.bak",
+        "description": "Backup .env and rotate tokens"
+      }
+    },
+    {
+      "id": "env-missing-jq",
+      "tool": "system",
+      "category": "dependency",
+      "detect": {
+        "command": "command -v jq >/dev/null && echo 0 || echo 1",
+        "condition": "eq",
+        "value": 1
+      },
+      "message": "jq not installed (required for JSON processing)",
+      "severity": "error",
+      "fix": {
+        "command": "brew install jq || apt-get install -y jq",
+        "description": "Install jq"
+      }
+    }
+  ]
+}
