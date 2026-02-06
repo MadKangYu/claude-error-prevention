@@ -1,6 +1,6 @@
 #!/bin/bash
 #==============================================================================
-# ERROR ENGINE v1.0
+# ERROR ENGINE v2.1
 # Pattern-based error detection, resolution, and verification
 #
 # Architecture:
@@ -47,6 +47,146 @@ ensure_deps() {
 }
 
 timestamp() { date -Iseconds; }
+
+#==============================================================================
+# SCOPE DETECTION
+#==============================================================================
+
+# Detect current scope based on installed tools and configs
+# Uses simple variables for bash 3 compatibility
+
+SCOPE_LIST=""
+
+detect_scope() {
+  log "Detecting scope..."
+  echo ""
+
+  SCOPE_LIST="global"
+  log_ok "Scope: global"
+
+  # Claude Code
+  if command -v claude &>/dev/null; then
+    SCOPE_LIST="$SCOPE_LIST claude"
+    log_ok "Scope: claude-code ($(claude --version 2>/dev/null || echo 'installed'))"
+  fi
+
+  # Claude project configs
+  if [ -f ".claude/settings.json" ] || [ -f "CLAUDE.md" ]; then
+    SCOPE_LIST="$SCOPE_LIST claude-project"
+    log_ok "Scope: claude-code (project)"
+  fi
+
+  # Crush / OpenCode
+  if command -v crush &>/dev/null; then
+    SCOPE_LIST="$SCOPE_LIST crush"
+    log_ok "Scope: crush ($(crush --version 2>/dev/null || echo 'installed'))"
+  elif command -v opencode &>/dev/null; then
+    SCOPE_LIST="$SCOPE_LIST opencode"
+    log_ok "Scope: opencode (legacy)"
+  fi
+
+  # OpenCode project configs
+  if [ -f ".opencode.json" ] || [ -f "AGENTS.md" ]; then
+    SCOPE_LIST="$SCOPE_LIST opencode-project"
+    log_ok "Scope: opencode (project)"
+  fi
+
+  # OpenClaw
+  if [ -f ~/.openclaw/openclaw.json ]; then
+    SCOPE_LIST="$SCOPE_LIST openclaw"
+    log_ok "Scope: openclaw"
+  fi
+
+  # Obsidian / QMD
+  if [ -d ~/Obsidian ] || command -v qmd &>/dev/null; then
+    SCOPE_LIST="$SCOPE_LIST obsidian"
+    log_ok "Scope: obsidian"
+  fi
+
+  # Terminals
+  [ -d "/Applications/iTerm.app" ] && SCOPE_LIST="$SCOPE_LIST iterm2" && log_ok "Scope: iTerm2"
+  [ -d "/Applications/Ghostty.app" ] && SCOPE_LIST="$SCOPE_LIST ghostty" && log_ok "Scope: Ghostty"
+  [ -d "/Applications/Warp.app" ] && SCOPE_LIST="$SCOPE_LIST warp" && log_ok "Scope: Warp"
+
+  echo ""
+}
+
+# Get config paths for a scope
+get_config_paths() {
+  local scope="$1"
+
+  case "$scope" in
+    global)
+      echo "System-wide configurations"
+      echo "  npm global: $(npm root -g 2>/dev/null || echo 'N/A')"
+      echo "  PATH: $PATH"
+      ;;
+    claude|claude-code)
+      echo "Claude Code configurations"
+      echo "  User config: ~/.claude/settings.json"
+      echo "  MCP config: ~/.claude/claude_code_config.json"
+      echo "  Memory: ~/.claude/CLAUDE.md"
+      echo "  Rules: ~/.claude/rules/"
+      echo "  Skills: ~/.claude/skills/"
+      ;;
+    claude-project)
+      echo "Claude Code project configurations"
+      echo "  Project: ./CLAUDE.md"
+      echo "  Settings: ./.claude/settings.json"
+      ;;
+    crush|opencode)
+      echo "Crush/OpenCode configurations"
+      echo "  User config: ~/.crush.json or ~/.config/opencode/opencode.json"
+      echo "  MCP config: ~/.config/opencode/.mcp.json"
+      echo "  Agents: ./AGENTS.md"
+      ;;
+    opencode-project)
+      echo "OpenCode project configurations"
+      echo "  Project: ./.opencode.json"
+      echo "  Agents: ./AGENTS.md"
+      ;;
+    openclaw)
+      echo "OpenClaw configurations"
+      echo "  Main: ~/.openclaw/openclaw.json"
+      echo "  Cron: ~/.openclaw/cron/jobs.json"
+      echo "  Skills: ~/.openclaw/skills/"
+      ;;
+    obsidian)
+      echo "Obsidian configurations"
+      echo "  Vault: ~/Obsidian/Vault"
+      echo "  QMD index: ~/.cache/qmd/index.sqlite"
+      ;;
+    oh-my-opencode)
+      echo "Oh My OpenCode configurations"
+      echo "  Config: ~/.config/opencode/opencode.json"
+      echo "  Plugins: npm list -g | grep opencode"
+      ;;
+    iterm2)
+      echo "iTerm2 configurations"
+      echo "  Preferences: ~/Library/Preferences/com.googlecode.iterm2.plist"
+      echo "  Shell integration: ~/.iterm2_shell_integration.*"
+      ;;
+    ghostty)
+      echo "Ghostty configurations"
+      echo "  Config: ~/.config/ghostty/config"
+      echo "  Themes: ~/.config/ghostty/themes/"
+      ;;
+    warp)
+      echo "Warp configurations"
+      echo "  Config: ~/.warp/"
+      echo "  Workflows: ~/.warp/workflows/"
+      ;;
+    *)
+      echo "Unknown scope: $scope"
+      ;;
+  esac
+}
+
+# Check if scope is active (bash 3 compatible)
+is_scope_active() {
+  local scope="$1"
+  echo "$SCOPE_LIST" | grep -qw "$scope"
+}
 
 #==============================================================================
 # PATTERN LOADING
@@ -436,6 +576,76 @@ EOF
 }
 
 #==============================================================================
+# DOCTOR INTEGRATION
+#==============================================================================
+
+run_all_doctors() {
+  log "Running doctor checks..."
+  echo ""
+
+  detect_scope
+
+  local passed=0
+  local failed=0
+
+  # Claude Code doctor
+  if is_scope_active "claude"; then
+    echo -e "${B}=== Claude Code ===${N}"
+    claude doctor 2>/dev/null && passed=$((passed+1)) || failed=$((failed+1))
+    echo ""
+  fi
+
+  # Crush/OpenCode
+  if is_scope_active "crush"; then
+    echo -e "${B}=== Crush ===${N}"
+    log_ok "Version: $(crush --version 2>/dev/null)"
+    passed=$((passed+1))
+    echo ""
+  fi
+
+  # OpenClaw
+  if is_scope_active "openclaw"; then
+    echo -e "${B}=== OpenClaw ===${N}"
+    if curl -sf http://localhost:18789/health &>/dev/null; then
+      log_ok "Gateway: OK"
+      passed=$((passed+1))
+    else
+      log_err "Gateway: DOWN"
+      failed=$((failed+1))
+    fi
+    echo ""
+  fi
+
+  # QMD
+  if is_scope_active "obsidian"; then
+    echo -e "${B}=== QMD ===${N}"
+    if command -v qmd &>/dev/null; then
+      log_ok "QMD installed"
+      passed=$((passed+1))
+    fi
+    echo ""
+  fi
+
+  # Config validation
+  echo -e "${B}=== Configs ===${N}"
+  for cfg in ~/.claude/settings.json ~/.claude/claude_code_config.json ~/.openclaw/openclaw.json; do
+    if [ -f "$cfg" ]; then
+      if jq empty "$cfg" 2>/dev/null; then
+        log_ok "$(basename "$cfg"): OK"
+        passed=$((passed+1))
+      else
+        log_err "$(basename "$cfg"): INVALID"
+        failed=$((failed+1))
+      fi
+    fi
+  done
+  echo ""
+
+  log "Result: $passed passed, $failed failed"
+  return $failed
+}
+
+#==============================================================================
 # MAIN
 #==============================================================================
 
@@ -447,12 +657,15 @@ Usage: $(basename "$0") <command>
 
 Commands:
   scan          Detect all errors
+  scope         Detect and show current scope
+  scope <name>  Show config paths for scope
   fix <id>      Fix specific error by ID
   fix-all       Fix all auto-fixable errors
   verify        Verify system state
   report        Generate JSON report
   list          List all error patterns
   search <kw>   Search errors by keyword
+  doctor        Run doctor for all detected tools
 
 Options:
   -h, --help  Show this help
@@ -471,7 +684,23 @@ main() {
 
   case "$cmd" in
     scan)
+      detect_scope
       scan_all
+      ;;
+    scope)
+      detect_scope
+      if [ -n "${2:-}" ]; then
+        echo ""
+        get_config_paths "$2"
+      else
+        echo "Detected scopes: ${!SCOPE_DETECTED[*]}"
+        echo ""
+        echo "Use: $0 scope <name> for config paths"
+        echo "Available: global, claude, opencode, openclaw, obsidian, iterm2, ghostty, warp"
+      fi
+      ;;
+    doctor)
+      run_all_doctors
       ;;
     fix)
       if [ -z "${2:-}" ]; then

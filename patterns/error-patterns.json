@@ -303,6 +303,193 @@
         "command": "bun install -g https://github.com/tobi/qmd",
         "description": "Install qmd for markdown search (requires bun)"
       }
+    },
+    {
+      "id": "env-missing-bun",
+      "tool": "system",
+      "category": "dependency",
+      "keywords": ["bun", "runtime", "javascript", "npm"],
+      "detect": {
+        "command": "command -v bun >/dev/null && echo 0 || echo 1",
+        "condition": "eq",
+        "value": 1
+      },
+      "message": "bun not installed (fast JavaScript runtime)",
+      "severity": "info",
+      "fix": {
+        "command": "curl -fsSL https://bun.sh/install | bash",
+        "description": "Install bun runtime"
+      }
+    },
+    {
+      "id": "npm-outdated-global",
+      "tool": "system",
+      "category": "dependency",
+      "keywords": ["npm", "outdated", "global", "update"],
+      "detect": {
+        "command": "npm outdated -g 2>/dev/null | wc -l | tr -d ' '",
+        "condition": "gt",
+        "value": 0
+      },
+      "message": "Outdated global npm packages detected",
+      "severity": "info",
+      "fix": {
+        "command": "npm update -g",
+        "description": "Update all global npm packages"
+      }
+    },
+    {
+      "id": "npx-cache-stale",
+      "tool": "system",
+      "category": "cache",
+      "keywords": ["npx", "cache", "stale", "old"],
+      "detect": {
+        "command": "test -d ~/.npm/_npx && find ~/.npm/_npx -mtime +30 -type d 2>/dev/null | wc -l | tr -d ' '",
+        "condition": "gt",
+        "value": 5
+      },
+      "message": "Stale npx cache (>30 days old)",
+      "severity": "info",
+      "fix": {
+        "command": "rm -rf ~/.npm/_npx",
+        "description": "Clear npx cache for fresh downloads"
+      }
+    },
+    {
+      "id": "claude-memory-missing",
+      "tool": "claude-code",
+      "category": "config",
+      "keywords": ["CLAUDE.md", "memory", "instructions", "user"],
+      "detect": {
+        "command": "test -f ~/.claude/CLAUDE.md && echo 0 || echo 1",
+        "condition": "eq",
+        "value": 1
+      },
+      "message": "User memory file (~/.claude/CLAUDE.md) not found",
+      "severity": "info",
+      "fix": {
+        "manual": true,
+        "description": "Create ~/.claude/CLAUDE.md with your preferences"
+      }
+    },
+    {
+      "id": "claude-rules-missing",
+      "tool": "claude-code",
+      "category": "config",
+      "keywords": ["rules", "directory", "modular"],
+      "detect": {
+        "command": "test -d ~/.claude/rules && echo 0 || echo 1",
+        "condition": "eq",
+        "value": 1
+      },
+      "message": "Rules directory (~/.claude/rules/) not found",
+      "severity": "info",
+      "fix": {
+        "command": "mkdir -p ~/.claude/rules",
+        "description": "Create rules directory for modular instructions"
+      }
+    },
+    {
+      "id": "claude-skills-empty",
+      "tool": "claude-code",
+      "category": "config",
+      "keywords": ["skills", "commands", "plugins"],
+      "detect": {
+        "command": "test -d ~/.claude/skills && ls ~/.claude/skills/*.md 2>/dev/null | wc -l | tr -d ' ' || echo 0",
+        "condition": "eq",
+        "value": 0
+      },
+      "message": "No custom skills found",
+      "severity": "info",
+      "fix": {
+        "manual": true,
+        "description": "Add custom skills to ~/.claude/skills/"
+      }
+    },
+    {
+      "id": "opencode-agents-missing",
+      "tool": "opencode",
+      "category": "config",
+      "keywords": ["AGENTS.md", "agents", "opencode", "crush"],
+      "detect": {
+        "command": "test -f ./AGENTS.md && echo 0 || echo 1",
+        "condition": "eq",
+        "value": 1
+      },
+      "message": "AGENTS.md not found in current directory",
+      "severity": "info",
+      "fix": {
+        "manual": true,
+        "description": "Run /init in OpenCode/Crush to create AGENTS.md"
+      }
+    },
+    {
+      "id": "terminal-iterm2-shell-integration",
+      "tool": "terminal",
+      "category": "config",
+      "keywords": ["iterm2", "shell", "integration"],
+      "detect": {
+        "command": "test -f ~/.iterm2_shell_integration.zsh && echo 0 || echo 1",
+        "condition": "eq",
+        "value": 1
+      },
+      "message": "iTerm2 shell integration not installed",
+      "severity": "info",
+      "fix": {
+        "command": "curl -L https://iterm2.com/shell_integration/install_shell_integration.sh | bash",
+        "description": "Install iTerm2 shell integration"
+      }
+    },
+    {
+      "id": "terminal-ghostty-config",
+      "tool": "terminal",
+      "category": "config",
+      "keywords": ["ghostty", "config", "terminal"],
+      "detect": {
+        "command": "test -d /Applications/Ghostty.app && test -f ~/.config/ghostty/config && echo 0 || test -d /Applications/Ghostty.app && echo 1 || echo skip",
+        "condition": "eq",
+        "value": 1
+      },
+      "message": "Ghostty installed but no config file",
+      "severity": "info",
+      "fix": {
+        "command": "mkdir -p ~/.config/ghostty && touch ~/.config/ghostty/config",
+        "description": "Create Ghostty config file"
+      }
+    },
+    {
+      "id": "git-user-not-set",
+      "tool": "system",
+      "category": "config",
+      "keywords": ["git", "user", "email", "name"],
+      "detect": {
+        "command": "git config --global user.email >/dev/null 2>&1 && echo 0 || echo 1",
+        "condition": "eq",
+        "value": 1
+      },
+      "message": "Git user email not configured globally",
+      "severity": "warning",
+      "fix": {
+        "manual": true,
+        "description": "Run: git config --global user.email 'your@email.com'"
+      }
+    },
+    {
+      "id": "ssh-key-missing",
+      "tool": "system",
+      "category": "security",
+      "keywords": ["ssh", "key", "github", "authentication"],
+      "detect": {
+        "command": "test -f ~/.ssh/id_ed25519 || test -f ~/.ssh/id_rsa && echo 0 || echo 1",
+        "condition": "eq",
+        "value": 1
+      },
+      "message": "No SSH key found (needed for GitHub)",
+      "severity": "info",
+      "fix": {
+        "command": "ssh-keygen -t ed25519 -C 'your@email.com'",
+        "description": "Generate new SSH key"
+      }
     }
   ]
 }
