@@ -340,6 +340,58 @@ verify_state() {
 }
 
 #==============================================================================
+# SEARCH ENGINE
+#==============================================================================
+
+search_errors() {
+  local keyword="$1"
+  local keyword_lower
+  keyword_lower=$(echo "$keyword" | tr '[:upper:]' '[:lower:]')
+
+  log "Searching for: $keyword"
+  echo ""
+
+  local found=0
+  local patterns
+  patterns=$(load_patterns)
+
+  while IFS= read -r pattern; do
+    local id tool message fix_desc keywords
+
+    id=$(echo "$pattern" | jq -r '.id')
+    tool=$(echo "$pattern" | jq -r '.tool')
+    message=$(echo "$pattern" | jq -r '.message')
+    fix_desc=$(echo "$pattern" | jq -r '.fix.description // "N/A"')
+    keywords=$(echo "$pattern" | jq -r '.keywords // [] | join(" ")')
+
+    # Search in id, message, fix description, keywords
+    local searchable
+    searchable=$(echo "$id $message $fix_desc $keywords" | tr '[:upper:]' '[:lower:]')
+
+    if [[ "$searchable" == *"$keyword_lower"* ]]; then
+      echo -e "${G}[$tool]${N} $id"
+      echo "  Message: $message"
+      echo "  Fix: $fix_desc"
+      echo ""
+      ((found++)) || true
+    fi
+  done <<< "$patterns"
+
+  if [ $found -eq 0 ]; then
+    log_warn "No matches found for: $keyword"
+    echo ""
+    echo "Try searching for:"
+    echo "  - duplicate, npm, install"
+    echo "  - json, schema, config"
+    echo "  - gateway, provider, uint64"
+    echo ""
+    echo "Or list all patterns: $0 list"
+  else
+    log_ok "Found $found match(es)"
+  fi
+}
+
+#==============================================================================
 # REPORTING
 #==============================================================================
 
@@ -394,12 +446,13 @@ Error Engine v1.0
 Usage: $(basename "$0") <command>
 
 Commands:
-  scan        Detect all errors
-  fix <id>    Fix specific error by ID
-  fix-all     Fix all auto-fixable errors
-  verify      Verify system state
-  report      Generate JSON report
-  list        List all error patterns
+  scan          Detect all errors
+  fix <id>      Fix specific error by ID
+  fix-all       Fix all auto-fixable errors
+  verify        Verify system state
+  report        Generate JSON report
+  list          List all error patterns
+  search <kw>   Search errors by keyword
 
 Options:
   -h, --help  Show this help
@@ -438,6 +491,13 @@ main() {
       ;;
     list)
       jq -r '.patterns[] | "\(.id)\t\(.severity)\t\(.message)"' "$PATTERNS_FILE" | column -t -s $'\t'
+      ;;
+    search)
+      if [ -z "${2:-}" ]; then
+        log_err "Usage: $0 search <keyword>"
+        exit 1
+      fi
+      search_errors "$2"
       ;;
     -h|--help|"")
       usage

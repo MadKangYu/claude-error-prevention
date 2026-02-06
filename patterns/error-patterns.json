@@ -6,6 +6,7 @@
       "id": "claude-duplicate-install",
       "tool": "claude-code",
       "category": "installation",
+      "keywords": ["multiple", "duplicate", "npm", "native", "which", "path"],
       "detect": {
         "command": "which -a claude 2>/dev/null | wc -l",
         "condition": "gt",
@@ -22,6 +23,7 @@
       "id": "claude-npm-deprecated",
       "tool": "claude-code",
       "category": "installation",
+      "keywords": ["npm", "deprecated", "anthropic-ai", "uninstall"],
       "detect": {
         "command": "npm list -g @anthropic-ai/claude-code 2>/dev/null | grep -c claude-code || echo 0",
         "condition": "gt",
@@ -38,6 +40,7 @@
       "id": "claude-settings-schema",
       "tool": "claude-code",
       "category": "config",
+      "keywords": ["schema", "settings.json", "schemastore", "invalid"],
       "detect": {
         "command": "jq -r '.\"$schema\" // \"missing\"' ~/.claude/settings.json 2>/dev/null",
         "condition": "neq",
@@ -54,6 +57,7 @@
       "id": "claude-deprecated-mcp-location",
       "tool": "claude-code",
       "category": "config",
+      "keywords": ["mcp.json", "deprecated", "location", "config"],
       "detect": {
         "command": "test -f ~/.mcp.json && echo 1 || echo 0",
         "condition": "eq",
@@ -70,6 +74,7 @@
       "id": "claude-invalid-json-settings",
       "tool": "claude-code",
       "category": "config",
+      "keywords": ["json", "syntax", "parse", "invalid", "settings"],
       "detect": {
         "command": "jq empty ~/.claude/settings.json 2>&1 && echo 0 || echo 1",
         "condition": "eq",
@@ -86,6 +91,7 @@
       "id": "claude-invalid-json-mcp",
       "tool": "claude-code",
       "category": "config",
+      "keywords": ["json", "syntax", "parse", "invalid", "mcp", "config"],
       "detect": {
         "command": "test -f ~/.claude/claude_code_config.json && (jq empty ~/.claude/claude_code_config.json 2>&1 && echo 0 || echo 1) || echo skip",
         "condition": "eq",
@@ -102,21 +108,23 @@
       "id": "opencode-uint64-schema",
       "tool": "opencode",
       "category": "schema",
+      "keywords": ["uint64", "format", "ignored", "schema", "warning", "mcp"],
       "detect": {
         "type": "log-pattern",
         "pattern": "unknown format \"uint64\" ignored"
       },
-      "message": "MCP schema uses non-standard uint64 format",
+      "message": "MCP schema uses non-standard uint64 format (warning only)",
       "severity": "info",
       "fix": {
         "action": "ignore",
-        "description": "Warning only, can be safely ignored"
+        "description": "Safe to ignore - MCP server uses non-standard format"
       }
     },
     {
       "id": "opencode-no-provider",
       "tool": "opencode",
       "category": "config",
+      "keywords": ["provider", "api", "key", "connect", "anthropic", "openai"],
       "detect": {
         "command": "test -f ~/.config/opencode/opencode.json && jq -r '.provider // .providers | keys | length' ~/.config/opencode/opencode.json 2>/dev/null || echo 0",
         "condition": "eq",
@@ -130,9 +138,26 @@
       }
     },
     {
+      "id": "opencode-old-version",
+      "tool": "opencode",
+      "category": "installation",
+      "keywords": ["version", "incompatible", "upgrade", "old"],
+      "detect": {
+        "type": "log-pattern",
+        "pattern": "Incompatible version"
+      },
+      "message": "Old OpenCode version conflict",
+      "severity": "error",
+      "fix": {
+        "command": "npm uninstall -g opencode-ai && brew install anomalyco/tap/opencode",
+        "description": "Remove old version and reinstall"
+      }
+    },
+    {
       "id": "openclaw-gateway-down",
       "tool": "openclaw",
       "category": "service",
+      "keywords": ["gateway", "18789", "connection", "refused", "health"],
       "detect": {
         "command": "curl -sf http://localhost:18789/health >/dev/null 2>&1 && echo 0 || echo 1",
         "condition": "eq",
@@ -149,6 +174,7 @@
       "id": "openclaw-env-exposed",
       "tool": "openclaw",
       "category": "security",
+      "keywords": ["env", "exposed", "token", "leak", "security", "git"],
       "detect": {
         "command": "test -f ~/.openclaw/.env && echo 1 || echo 0",
         "condition": "eq",
@@ -162,9 +188,93 @@
       }
     },
     {
+      "id": "openclaw-browserless-down",
+      "tool": "openclaw",
+      "category": "service",
+      "keywords": ["browserless", "3000", "docker", "container"],
+      "detect": {
+        "command": "curl -sf http://localhost:3000 >/dev/null 2>&1 && echo 0 || echo 1",
+        "condition": "eq",
+        "value": 1
+      },
+      "message": "Browserless service not running",
+      "severity": "warning",
+      "fix": {
+        "command": "docker compose -f ~/.openclaw/docker-compose.browserless.yml up -d",
+        "description": "Start Browserless container"
+      }
+    },
+    {
+      "id": "obsidian-vault-not-found",
+      "tool": "obsidian",
+      "category": "config",
+      "keywords": ["vault", "path", "obsidian", "not found", "directory"],
+      "detect": {
+        "command": "test -d ~/Obsidian/Vault && echo 0 || echo 1",
+        "condition": "eq",
+        "value": 1
+      },
+      "message": "Obsidian vault not found at default location",
+      "severity": "warning",
+      "fix": {
+        "manual": true,
+        "description": "Set correct vault path in Obsidian settings"
+      }
+    },
+    {
+      "id": "obsidian-qmd-not-indexed",
+      "tool": "obsidian",
+      "category": "search",
+      "keywords": ["qmd", "index", "search", "embed", "vector"],
+      "detect": {
+        "command": "test -f ~/.cache/qmd/index.sqlite && echo 0 || echo 1",
+        "condition": "eq",
+        "value": 1
+      },
+      "message": "QMD index not found - vault not searchable",
+      "severity": "warning",
+      "fix": {
+        "command": "qmd collection add ~/Obsidian/Vault --name vault --mask '**/*.md' && qmd update && qmd embed",
+        "description": "Create QMD index for vault"
+      }
+    },
+    {
+      "id": "obsidian-sync-conflict",
+      "tool": "obsidian",
+      "category": "sync",
+      "keywords": ["sync", "conflict", "duplicate", "icloud", "dropbox"],
+      "detect": {
+        "type": "file-pattern",
+        "pattern": "*.sync-conflict-*"
+      },
+      "message": "Sync conflict files detected in vault",
+      "severity": "warning",
+      "fix": {
+        "manual": true,
+        "description": "Manually resolve sync conflicts and delete conflict files"
+      }
+    },
+    {
+      "id": "obsidian-orphaned-notes",
+      "tool": "obsidian",
+      "category": "structure",
+      "keywords": ["orphan", "unlinked", "isolated", "graph"],
+      "detect": {
+        "type": "plugin-check",
+        "plugin": "graph-view"
+      },
+      "message": "Orphaned notes detected (no incoming/outgoing links)",
+      "severity": "info",
+      "fix": {
+        "manual": true,
+        "description": "Review orphaned notes in Graph View"
+      }
+    },
+    {
       "id": "env-missing-jq",
       "tool": "system",
       "category": "dependency",
+      "keywords": ["jq", "install", "json", "brew", "apt"],
       "detect": {
         "command": "command -v jq >/dev/null && echo 0 || echo 1",
         "condition": "eq",
@@ -175,6 +285,23 @@
       "fix": {
         "command": "brew install jq || apt-get install -y jq",
         "description": "Install jq"
+      }
+    },
+    {
+      "id": "env-missing-qmd",
+      "tool": "system",
+      "category": "dependency",
+      "keywords": ["qmd", "search", "markdown", "tobi"],
+      "detect": {
+        "command": "command -v qmd >/dev/null && echo 0 || echo 1",
+        "condition": "eq",
+        "value": 1
+      },
+      "message": "qmd not installed (local markdown search)",
+      "severity": "info",
+      "fix": {
+        "command": "brew install tobi/tap/qmd || go install github.com/tobi/qmd@latest",
+        "description": "Install qmd for markdown search"
       }
     }
   ]

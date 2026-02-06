@@ -31,6 +31,7 @@ cd claude-error-prevention
 | Feature | Description |
 |---------|-------------|
 | **Detect** | Pattern-based error detection |
+| **Search** | Find errors by keyword or message |
 | **Resolve** | Automatic fixes with verification |
 | **Verify** | Pre/post fix validation |
 | **Report** | JSON reports for tracking |
@@ -73,6 +74,9 @@ sudo apt-get install jq
 
 # List all error patterns
 ./src/error-engine.sh list
+
+# Search by keyword
+./src/error-engine.sh search <keyword>
 ```
 
 ---
@@ -102,6 +106,23 @@ sudo apt-get install jq
 |-------|-----|----------|
 | Gateway down | `openclaw-gateway-down` | Yes |
 | .env exposure | `openclaw-env-exposed` | Yes |
+| Browserless down | `openclaw-browserless-down` | Yes |
+
+### Obsidian
+
+| Error | ID | Auto-Fix |
+|-------|-----|----------|
+| Vault not found | `obsidian-vault-not-found` | Manual |
+| QMD not indexed | `obsidian-qmd-not-indexed` | Yes |
+| Sync conflicts | `obsidian-sync-conflict` | Manual |
+| Orphaned notes | `obsidian-orphaned-notes` | Manual |
+
+### System
+
+| Error | ID | Auto-Fix |
+|-------|-----|----------|
+| jq not installed | `env-missing-jq` | Yes |
+| qmd not installed | `env-missing-qmd` | Yes |
 
 ---
 
@@ -120,6 +141,7 @@ claude-error-prevention/
 │   ├── common-errors.md
 │   ├── opencode-errors.md
 │   ├── openclaw-errors.md
+│   ├── obsidian-errors.md
 │   └── oh-my-opencode-errors.md
 └── scripts/
     ├── verify-all.sh
