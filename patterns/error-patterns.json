@@ -6,7 +6,16 @@
       "id": "claude-duplicate-install",
       "tool": "claude-code",
       "category": "installation",
-      "keywords": ["multiple", "duplicate", "npm", "native", "which", "path"],
+      "keywords": [
+        "multiple",
+        "duplicate",
+        "npm",
+        "native",
+        "which",
+        "path",
+        "Multiple claude binaries",
+        "binaries found"
+      ],
       "detect": {
         "command": "which -a claude 2>/dev/null | wc -l",
         "condition": "gt",
@@ -23,7 +32,12 @@
       "id": "claude-npm-deprecated",
       "tool": "claude-code",
       "category": "installation",
-      "keywords": ["npm", "deprecated", "anthropic-ai", "uninstall"],
+      "keywords": [
+        "npm",
+        "deprecated",
+        "anthropic-ai",
+        "uninstall"
+      ],
       "detect": {
         "command": "npm list -g @anthropic-ai/claude-code 2>/dev/null | grep -c claude-code || echo 0",
         "condition": "gt",
@@ -40,7 +54,12 @@
       "id": "claude-settings-schema",
       "tool": "claude-code",
       "category": "config",
-      "keywords": ["schema", "settings.json", "schemastore", "invalid"],
+      "keywords": [
+        "schema",
+        "settings.json",
+        "schemastore",
+        "invalid"
+      ],
       "detect": {
         "command": "jq -r '.\"$schema\" // \"missing\"' ~/.claude/settings.json 2>/dev/null",
         "condition": "neq",
@@ -57,7 +76,12 @@
       "id": "claude-deprecated-mcp-location",
       "tool": "claude-code",
       "category": "config",
-      "keywords": ["mcp.json", "deprecated", "location", "config"],
+      "keywords": [
+        "mcp.json",
+        "deprecated",
+        "location",
+        "config"
+      ],
       "detect": {
         "command": "test -f ~/.mcp.json && echo 1 || echo 0",
         "condition": "eq",
@@ -74,7 +98,13 @@
       "id": "claude-invalid-json-settings",
       "tool": "claude-code",
       "category": "config",
-      "keywords": ["json", "syntax", "parse", "invalid", "settings"],
+      "keywords": [
+        "json",
+        "syntax",
+        "parse",
+        "invalid",
+        "settings"
+      ],
       "detect": {
         "command": "jq empty ~/.claude/settings.json 2>&1 && echo 0 || echo 1",
         "condition": "eq",
@@ -91,7 +121,14 @@
       "id": "claude-invalid-json-mcp",
       "tool": "claude-code",
       "category": "config",
-      "keywords": ["json", "syntax", "parse", "invalid", "mcp", "config"],
+      "keywords": [
+        "json",
+        "syntax",
+        "parse",
+        "invalid",
+        "mcp",
+        "config"
+      ],
       "detect": {
         "command": "test -f ~/.claude/claude_code_config.json && (jq empty ~/.claude/claude_code_config.json 2>&1 && echo 0 || echo 1) || echo skip",
         "condition": "eq",
@@ -108,7 +145,14 @@
       "id": "opencode-uint64-schema",
       "tool": "opencode",
       "category": "schema",
-      "keywords": ["uint64", "format", "ignored", "schema", "warning", "mcp"],
+      "keywords": [
+        "uint64",
+        "format",
+        "ignored",
+        "schema",
+        "warning",
+        "mcp"
+      ],
       "detect": {
         "type": "log-pattern",
         "pattern": "unknown format \"uint64\" ignored"
@@ -124,7 +168,14 @@
       "id": "opencode-no-provider",
       "tool": "opencode",
       "category": "config",
-      "keywords": ["provider", "api", "key", "connect", "anthropic", "openai"],
+      "keywords": [
+        "provider",
+        "api",
+        "key",
+        "connect",
+        "anthropic",
+        "openai"
+      ],
       "detect": {
         "command": "test -f ~/.config/opencode/opencode.json && jq -r '.provider // .providers | keys | length' ~/.config/opencode/opencode.json 2>/dev/null || echo 0",
         "condition": "eq",
@@ -141,7 +192,12 @@
       "id": "opencode-old-version",
       "tool": "opencode",
       "category": "installation",
-      "keywords": ["version", "incompatible", "upgrade", "old"],
+      "keywords": [
+        "version",
+        "incompatible",
+        "upgrade",
+        "old"
+      ],
       "detect": {
         "type": "log-pattern",
         "pattern": "Incompatible version"
@@ -157,7 +213,13 @@
       "id": "openclaw-gateway-down",
       "tool": "openclaw",
       "category": "service",
-      "keywords": ["gateway", "18789", "connection", "refused", "health"],
+      "keywords": [
+        "gateway",
+        "18789",
+        "connection",
+        "refused",
+        "health"
+      ],
       "detect": {
         "command": "curl -sf http://localhost:18789/health >/dev/null 2>&1 && echo 0 || echo 1",
         "condition": "eq",
@@ -174,7 +236,14 @@
       "id": "openclaw-env-exposed",
       "tool": "openclaw",
       "category": "security",
-      "keywords": ["env", "exposed", "token", "leak", "security", "git"],
+      "keywords": [
+        "env",
+        "exposed",
+        "token",
+        "leak",
+        "security",
+        "git"
+      ],
       "detect": {
         "command": "test -f ~/.openclaw/.env && echo 1 || echo 0",
         "condition": "eq",
@@ -191,7 +260,12 @@
       "id": "openclaw-browserless-down",
       "tool": "openclaw",
       "category": "service",
-      "keywords": ["browserless", "3000", "docker", "container"],
+      "keywords": [
+        "browserless",
+        "3000",
+        "docker",
+        "container"
+      ],
       "detect": {
         "command": "curl -sf http://localhost:3000 >/dev/null 2>&1 && echo 0 || echo 1",
         "condition": "eq",
@@ -208,7 +282,13 @@
       "id": "obsidian-vault-not-found",
       "tool": "obsidian",
       "category": "config",
-      "keywords": ["vault", "path", "obsidian", "not found", "directory"],
+      "keywords": [
+        "vault",
+        "path",
+        "obsidian",
+        "not found",
+        "directory"
+      ],
       "detect": {
         "command": "test -d ~/Obsidian/Vault && echo 0 || echo 1",
         "condition": "eq",
@@ -225,7 +305,13 @@
       "id": "obsidian-qmd-not-indexed",
       "tool": "obsidian",
       "category": "search",
-      "keywords": ["qmd", "index", "search", "embed", "vector"],
+      "keywords": [
+        "qmd",
+        "index",
+        "search",
+        "embed",
+        "vector"
+      ],
       "detect": {
         "command": "test -f ~/.cache/qmd/index.sqlite && echo 0 || echo 1",
         "condition": "eq",
@@ -242,7 +328,13 @@
       "id": "obsidian-sync-conflict",
       "tool": "obsidian",
       "category": "sync",
-      "keywords": ["sync", "conflict", "duplicate", "icloud", "dropbox"],
+      "keywords": [
+        "sync",
+        "conflict",
+        "duplicate",
+        "icloud",
+        "dropbox"
+      ],
       "detect": {
         "type": "file-pattern",
         "pattern": "*.sync-conflict-*"
@@ -258,7 +350,12 @@
       "id": "obsidian-orphaned-notes",
       "tool": "obsidian",
       "category": "structure",
-      "keywords": ["orphan", "unlinked", "isolated", "graph"],
+      "keywords": [
+        "orphan",
+        "unlinked",
+        "isolated",
+        "graph"
+      ],
       "detect": {
         "type": "plugin-check",
         "plugin": "graph-view"
@@ -274,7 +371,13 @@
       "id": "env-missing-jq",
       "tool": "system",
       "category": "dependency",
-      "keywords": ["jq", "install", "json", "brew", "apt"],
+      "keywords": [
+        "jq",
+        "install",
+        "json",
+        "brew",
+        "apt"
+      ],
       "detect": {
         "command": "command -v jq >/dev/null && echo 0 || echo 1",
         "condition": "eq",
@@ -291,7 +394,12 @@
       "id": "env-missing-qmd",
       "tool": "system",
       "category": "dependency",
-      "keywords": ["qmd", "search", "markdown", "tobi"],
+      "keywords": [
+        "qmd",
+        "search",
+        "markdown",
+        "tobi"
+      ],
       "detect": {
         "command": "command -v qmd >/dev/null && echo 0 || echo 1",
         "condition": "eq",
@@ -308,7 +416,12 @@
       "id": "env-missing-bun",
       "tool": "system",
       "category": "dependency",
-      "keywords": ["bun", "runtime", "javascript", "npm"],
+      "keywords": [
+        "bun",
+        "runtime",
+        "javascript",
+        "npm"
+      ],
       "detect": {
         "command": "command -v bun >/dev/null && echo 0 || echo 1",
         "condition": "eq",
@@ -325,7 +438,12 @@
       "id": "npm-outdated-global",
       "tool": "system",
       "category": "dependency",
-      "keywords": ["npm", "outdated", "global", "update"],
+      "keywords": [
+        "npm",
+        "outdated",
+        "global",
+        "update"
+      ],
       "detect": {
         "command": "npm outdated -g 2>/dev/null | wc -l | tr -d ' '",
         "condition": "gt",
@@ -342,7 +460,12 @@
       "id": "npx-cache-stale",
       "tool": "system",
       "category": "cache",
-      "keywords": ["npx", "cache", "stale", "old"],
+      "keywords": [
+        "npx",
+        "cache",
+        "stale",
+        "old"
+      ],
       "detect": {
         "command": "test -d ~/.npm/_npx && find ~/.npm/_npx -mtime +30 -type d 2>/dev/null | wc -l | tr -d ' '",
         "condition": "gt",
@@ -359,7 +482,12 @@
       "id": "claude-memory-missing",
       "tool": "claude-code",
       "category": "config",
-      "keywords": ["CLAUDE.md", "memory", "instructions", "user"],
+      "keywords": [
+        "CLAUDE.md",
+        "memory",
+        "instructions",
+        "user"
+      ],
       "detect": {
         "command": "test -f ~/.claude/CLAUDE.md && echo 0 || echo 1",
         "condition": "eq",
@@ -376,7 +504,11 @@
       "id": "claude-rules-missing",
       "tool": "claude-code",
       "category": "config",
-      "keywords": ["rules", "directory", "modular"],
+      "keywords": [
+        "rules",
+        "directory",
+        "modular"
+      ],
       "detect": {
         "command": "test -d ~/.claude/rules && echo 0 || echo 1",
         "condition": "eq",
@@ -393,7 +525,11 @@
       "id": "claude-skills-empty",
       "tool": "claude-code",
       "category": "config",
-      "keywords": ["skills", "commands", "plugins"],
+      "keywords": [
+        "skills",
+        "commands",
+        "plugins"
+      ],
       "detect": {
         "command": "test -d ~/.claude/skills && ls ~/.claude/skills/*.md 2>/dev/null | wc -l | tr -d ' ' || echo 0",
         "condition": "eq",
@@ -410,7 +546,12 @@
       "id": "opencode-agents-missing",
       "tool": "opencode",
       "category": "config",
-      "keywords": ["AGENTS.md", "agents", "opencode", "crush"],
+      "keywords": [
+        "AGENTS.md",
+        "agents",
+        "opencode",
+        "crush"
+      ],
       "detect": {
         "command": "test -f ./AGENTS.md && echo 0 || echo 1",
         "condition": "eq",
@@ -427,7 +568,11 @@
       "id": "terminal-iterm2-shell-integration",
       "tool": "terminal",
       "category": "config",
-      "keywords": ["iterm2", "shell", "integration"],
+      "keywords": [
+        "iterm2",
+        "shell",
+        "integration"
+      ],
       "detect": {
         "command": "test -f ~/.iterm2_shell_integration.zsh && echo 0 || echo 1",
         "condition": "eq",
@@ -444,7 +589,11 @@
       "id": "terminal-ghostty-config",
       "tool": "terminal",
       "category": "config",
-      "keywords": ["ghostty", "config", "terminal"],
+      "keywords": [
+        "ghostty",
+        "config",
+        "terminal"
+      ],
       "detect": {
         "command": "test -d /Applications/Ghostty.app && test -f ~/.config/ghostty/config && echo 0 || test -d /Applications/Ghostty.app && echo 1 || echo skip",
         "condition": "eq",
@@ -461,7 +610,12 @@
       "id": "git-user-not-set",
       "tool": "system",
       "category": "config",
-      "keywords": ["git", "user", "email", "name"],
+      "keywords": [
+        "git",
+        "user",
+        "email",
+        "name"
+      ],
       "detect": {
         "command": "git config --global user.email >/dev/null 2>&1 && echo 0 || echo 1",
         "condition": "eq",
@@ -478,7 +632,12 @@
       "id": "ssh-key-missing",
       "tool": "system",
       "category": "security",
-      "keywords": ["ssh", "key", "github", "authentication"],
+      "keywords": [
+        "ssh",
+        "key",
+        "github",
+        "authentication"
+      ],
       "detect": {
         "command": "test -f ~/.ssh/id_ed25519 || test -f ~/.ssh/id_rsa && echo 0 || echo 1",
         "condition": "eq",
@@ -495,7 +654,13 @@
       "id": "beginner-sudo-npm",
       "tool": "system",
       "category": "beginner-mistake",
-      "keywords": ["sudo", "npm", "permission", "root", "dangerous"],
+      "keywords": [
+        "sudo",
+        "npm",
+        "permission",
+        "root",
+        "dangerous"
+      ],
       "detect": {
         "command": "test -O $(npm root -g 2>/dev/null) && echo 0 || echo 1",
         "condition": "eq",
@@ -512,7 +677,13 @@
       "id": "beginner-wrong-mcp-path",
       "tool": "claude-code",
       "category": "beginner-mistake",
-      "keywords": ["mcp", "path", "wrong", "config", "deprecated"],
+      "keywords": [
+        "mcp",
+        "path",
+        "wrong",
+        "config",
+        "deprecated"
+      ],
       "detect": {
         "command": "test -f ~/.mcp.json && echo 1 || echo 0",
         "condition": "eq",
@@ -529,7 +700,13 @@
       "id": "beginner-env-in-git",
       "tool": "system",
       "category": "beginner-mistake",
-      "keywords": ["env", "git", "secret", "exposed", "leak"],
+      "keywords": [
+        "env",
+        "git",
+        "secret",
+        "exposed",
+        "leak"
+      ],
       "detect": {
         "command": "git ls-files 2>/dev/null | grep -E '^\\.env$|secrets' | head -1 | wc -l | tr -d ' '",
         "condition": "gt",
@@ -546,7 +723,11 @@
       "id": "beginner-node-modules-in-git",
       "tool": "system",
       "category": "beginner-mistake",
-      "keywords": ["node_modules", "git", "bloat"],
+      "keywords": [
+        "node_modules",
+        "git",
+        "bloat"
+      ],
       "detect": {
         "command": "git ls-files 2>/dev/null | grep -c node_modules || echo 0",
         "condition": "gt",
@@ -563,7 +744,12 @@
       "id": "failure-doc-summarized",
       "tool": "claude-code",
       "category": "failure-case",
-      "keywords": ["documentation", "summarized", "verbatim", "translation"],
+      "keywords": [
+        "documentation",
+        "summarized",
+        "verbatim",
+        "translation"
+      ],
       "detect": {
         "type": "manual-check",
         "description": "AI summarized docs instead of copying verbatim"
@@ -579,7 +765,12 @@
       "id": "failure-webfetch-verification",
       "tool": "claude-code",
       "category": "failure-case",
-      "keywords": ["webfetch", "verification", "ai", "interpretation"],
+      "keywords": [
+        "webfetch",
+        "verification",
+        "ai",
+        "interpretation"
+      ],
       "detect": {
         "type": "manual-check",
         "description": "Used WebFetch for verification (introduces AI bias)"
@@ -595,7 +786,12 @@
       "id": "failure-claimed-100-percent",
       "tool": "claude-code",
       "category": "failure-case",
-      "keywords": ["100%", "complete", "perfect", "claim"],
+      "keywords": [
+        "100%",
+        "complete",
+        "perfect",
+        "claim"
+      ],
       "detect": {
         "type": "manual-check",
         "description": "Claimed 100% completion without verification"
@@ -611,7 +807,12 @@
       "id": "failure-opencode-not-crush",
       "tool": "opencode",
       "category": "failure-case",
-      "keywords": ["opencode", "crush", "renamed", "archived"],
+      "keywords": [
+        "opencode",
+        "crush",
+        "renamed",
+        "archived"
+      ],
       "detect": {
         "command": "command -v opencode >/dev/null && ! command -v crush >/dev/null && echo 1 || echo 0",
         "condition": "eq",
@@ -628,7 +829,12 @@
       "id": "failure-brew-without-cask",
       "tool": "claude-code",
       "category": "failure-case",
-      "keywords": ["brew", "cask", "install", "claude-code"],
+      "keywords": [
+        "brew",
+        "cask",
+        "install",
+        "claude-code"
+      ],
       "detect": {
         "type": "manual-check",
         "description": "Used 'brew install claude-code' without --cask"
@@ -644,7 +850,12 @@
       "id": "failure-qmd-brew-not-bun",
       "tool": "obsidian",
       "category": "failure-case",
-      "keywords": ["qmd", "brew", "bun", "install"],
+      "keywords": [
+        "qmd",
+        "brew",
+        "bun",
+        "install"
+      ],
       "detect": {
         "type": "manual-check",
         "description": "Tried to install QMD with brew instead of bun"
@@ -660,7 +871,12 @@
       "id": "antigravity-oauth-blocked",
       "tool": "opencode",
       "category": "auth",
-      "keywords": ["antigravity", "oauth", "google", "blocked"],
+      "keywords": [
+        "antigravity",
+        "oauth",
+        "google",
+        "blocked"
+      ],
       "detect": {
         "type": "log-pattern",
         "pattern": "OAuth.*blocked|antigravity.*fail"
@@ -676,7 +892,13 @@
       "id": "quota-rate-limit",
       "tool": "system",
       "category": "quota",
-      "keywords": ["rate", "limit", "429", "too many requests", "quota"],
+      "keywords": [
+        "rate",
+        "limit",
+        "429",
+        "too many requests",
+        "quota"
+      ],
       "detect": {
         "type": "log-pattern",
         "pattern": "rate.limit|429|too.many.requests"
@@ -692,7 +914,13 @@
       "id": "quota-context-exceeded",
       "tool": "claude-code",
       "category": "quota",
-      "keywords": ["context", "exceeded", "token", "limit", "compact"],
+      "keywords": [
+        "context",
+        "exceeded",
+        "token",
+        "limit",
+        "compact"
+      ],
       "detect": {
         "type": "log-pattern",
         "pattern": "context.*exceeded|token.*limit"
@@ -708,7 +936,12 @@
       "id": "quota-daily-limit",
       "tool": "claude-code",
       "category": "quota",
-      "keywords": ["daily", "limit", "usage", "exceeded"],
+      "keywords": [
+        "daily",
+        "limit",
+        "usage",
+        "exceeded"
+      ],
       "detect": {
         "type": "log-pattern",
         "pattern": "daily.*limit|usage.*exceeded"
@@ -724,7 +957,12 @@
       "id": "quota-fallback-provider",
       "tool": "system",
       "category": "quota",
-      "keywords": ["fallback", "provider", "switch", "alternative"],
+      "keywords": [
+        "fallback",
+        "provider",
+        "switch",
+        "alternative"
+      ],
       "detect": {
         "type": "manual-check",
         "description": "Primary provider quota exceeded"
@@ -740,7 +978,13 @@
       "id": "server-connection-refused",
       "tool": "system",
       "category": "server",
-      "keywords": ["connection", "refused", "ECONNREFUSED", "server", "down"],
+      "keywords": [
+        "connection",
+        "refused",
+        "ECONNREFUSED",
+        "server",
+        "down"
+      ],
       "detect": {
         "type": "log-pattern",
         "pattern": "ECONNREFUSED|connection.refused"
@@ -756,7 +1000,12 @@
       "id": "server-timeout",
       "tool": "system",
       "category": "server",
-      "keywords": ["timeout", "ETIMEDOUT", "slow", "response"],
+      "keywords": [
+        "timeout",
+        "ETIMEDOUT",
+        "slow",
+        "response"
+      ],
       "detect": {
         "type": "log-pattern",
         "pattern": "ETIMEDOUT|timeout|timed.out"
@@ -772,7 +1021,13 @@
       "id": "server-ssl-error",
       "tool": "system",
       "category": "server",
-      "keywords": ["ssl", "certificate", "https", "tls", "secure"],
+      "keywords": [
+        "ssl",
+        "certificate",
+        "https",
+        "tls",
+        "secure"
+      ],
       "detect": {
         "type": "log-pattern",
         "pattern": "SSL|certificate|CERT"
@@ -788,7 +1043,12 @@
       "id": "install-curl-fail",
       "tool": "system",
       "category": "install",
-      "keywords": ["curl", "download", "fail", "network"],
+      "keywords": [
+        "curl",
+        "download",
+        "fail",
+        "network"
+      ],
       "detect": {
         "type": "log-pattern",
         "pattern": "curl.*fail|download.*fail"
@@ -804,7 +1064,12 @@
       "id": "install-permission-denied",
       "tool": "system",
       "category": "install",
-      "keywords": ["permission", "denied", "EACCES", "access"],
+      "keywords": [
+        "permission",
+        "denied",
+        "EACCES",
+        "access"
+      ],
       "detect": {
         "type": "log-pattern",
         "pattern": "EACCES|permission.denied|Permission denied"
@@ -820,7 +1085,12 @@
       "id": "install-enoent",
       "tool": "system",
       "category": "install",
-      "keywords": ["ENOENT", "not found", "missing", "file"],
+      "keywords": [
+        "ENOENT",
+        "not found",
+        "missing",
+        "file"
+      ],
       "detect": {
         "type": "log-pattern",
         "pattern": "ENOENT|not found|No such file"
@@ -836,7 +1106,12 @@
       "id": "patch-git-conflict",
       "tool": "system",
       "category": "patch",
-      "keywords": ["conflict", "merge", "git", "CONFLICT"],
+      "keywords": [
+        "conflict",
+        "merge",
+        "git",
+        "CONFLICT"
+      ],
       "detect": {
         "command": "git status 2>/dev/null | grep -c 'both modified' || echo 0",
         "condition": "gt",
@@ -853,7 +1128,12 @@
       "id": "patch-uncommitted-changes",
       "tool": "system",
       "category": "patch",
-      "keywords": ["uncommitted", "changes", "dirty", "stash"],
+      "keywords": [
+        "uncommitted",
+        "changes",
+        "dirty",
+        "stash"
+      ],
       "detect": {
         "command": "git status --porcelain 2>/dev/null | wc -l | tr -d ' '",
         "condition": "gt",
@@ -870,7 +1150,13 @@
       "id": "mcp-server-crash",
       "tool": "claude-code",
       "category": "server",
-      "keywords": ["mcp", "crash", "server", "exit", "spawn"],
+      "keywords": [
+        "mcp",
+        "crash",
+        "server",
+        "exit",
+        "spawn"
+      ],
       "detect": {
         "type": "log-pattern",
         "pattern": "MCP.*crash|spawn.*fail|server.*exit"
@@ -886,7 +1172,13 @@
       "id": "mcp-invalid-response",
       "tool": "claude-code",
       "category": "server",
-      "keywords": ["mcp", "invalid", "response", "json", "parse"],
+      "keywords": [
+        "mcp",
+        "invalid",
+        "response",
+        "json",
+        "parse"
+      ],
       "detect": {
         "type": "log-pattern",
         "pattern": "invalid.*response|parse.*error"
@@ -902,7 +1194,12 @@
       "id": "npm-peer-dependency",
       "tool": "system",
       "category": "install",
-      "keywords": ["peer", "dependency", "npm", "conflict"],
+      "keywords": [
+        "peer",
+        "dependency",
+        "npm",
+        "conflict"
+      ],
       "detect": {
         "type": "log-pattern",
         "pattern": "peer dep|ERESOLVE|peer dependency"
@@ -918,7 +1215,12 @@
       "id": "brew-formula-not-found",
       "tool": "system",
       "category": "install",
-      "keywords": ["brew", "formula", "not found", "tap"],
+      "keywords": [
+        "brew",
+        "formula",
+        "not found",
+        "tap"
+      ],
       "detect": {
         "type": "log-pattern",
         "pattern": "No available formula|formula not found"
@@ -934,7 +1236,13 @@
       "id": "openclaw-telegram-no-response",
       "tool": "openclaw",
       "category": "telegram",
-      "keywords": ["telegram", "bot", "no response", "silent", "응답없음"],
+      "keywords": [
+        "telegram",
+        "bot",
+        "no response",
+        "silent",
+        "응답없음"
+      ],
       "detect": {
         "type": "log-pattern",
         "pattern": "telegram.*timeout|no response|응답.*없"
@@ -950,7 +1258,13 @@
       "id": "openclaw-telegram-token-invalid",
       "tool": "openclaw",
       "category": "telegram",
-      "keywords": ["telegram", "token", "invalid", "unauthorized", "401"],
+      "keywords": [
+        "telegram",
+        "token",
+        "invalid",
+        "unauthorized",
+        "401"
+      ],
       "detect": {
         "type": "log-pattern",
         "pattern": "401|Unauthorized|invalid token"
@@ -966,7 +1280,13 @@
       "id": "openclaw-telegram-webhook-fail",
       "tool": "openclaw",
       "category": "telegram",
-      "keywords": ["telegram", "webhook", "fail", "ssl", "https"],
+      "keywords": [
+        "telegram",
+        "webhook",
+        "fail",
+        "ssl",
+        "https"
+      ],
       "detect": {
         "type": "log-pattern",
         "pattern": "webhook.*fail|ssl.*error|https.*required"
@@ -982,7 +1302,14 @@
       "id": "korean-ambiguous-delete",
       "tool": "system",
       "category": "korean-error",
-      "keywords": ["정리", "지워", "삭제", "delete", "clean", "ambiguous"],
+      "keywords": [
+        "정리",
+        "지워",
+        "삭제",
+        "delete",
+        "clean",
+        "ambiguous"
+      ],
       "detect": {
         "type": "language-pattern",
         "pattern": "정리|지워|없애|치워|비워"
@@ -998,7 +1325,13 @@
       "id": "korean-implicit-fix",
       "tool": "system",
       "category": "korean-error",
-      "keywords": ["안돼", "이상해", "문제", "에러", "implicit"],
+      "keywords": [
+        "안돼",
+        "이상해",
+        "문제",
+        "에러",
+        "implicit"
+      ],
       "detect": {
         "type": "language-pattern",
         "pattern": "안돼|안됨|이상해|문제있|에러나"
@@ -1014,7 +1347,14 @@
       "id": "korean-dangerous-scope",
       "tool": "system",
       "category": "korean-error",
-      "keywords": ["다", "전부", "싹", "밀어", "초기화", "dangerous"],
+      "keywords": [
+        "다",
+        "전부",
+        "싹",
+        "밀어",
+        "초기화",
+        "dangerous"
+      ],
       "detect": {
         "type": "language-pattern",
         "pattern": "다 지워|싹 밀|초기화|리셋"
