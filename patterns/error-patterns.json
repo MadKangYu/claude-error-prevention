@@ -487,8 +487,189 @@
       "message": "No SSH key found (needed for GitHub)",
       "severity": "info",
       "fix": {
-        "command": "ssh-keygen -t ed25519 -C 'your@email.com'",
+        "command": "ssh-keygen -t ed25519 -N '' -f ~/.ssh/id_ed25519",
         "description": "Generate new SSH key"
+      }
+    },
+    {
+      "id": "beginner-sudo-npm",
+      "tool": "system",
+      "category": "beginner-mistake",
+      "keywords": ["sudo", "npm", "permission", "root", "dangerous"],
+      "detect": {
+        "command": "test -O $(npm root -g 2>/dev/null) && echo 0 || echo 1",
+        "condition": "eq",
+        "value": 1
+      },
+      "message": "npm global directory owned by root (sudo npm was used)",
+      "severity": "error",
+      "fix": {
+        "manual": true,
+        "description": "Fix npm permissions: https://docs.npmjs.com/resolving-eacces-permissions-errors"
+      }
+    },
+    {
+      "id": "beginner-wrong-mcp-path",
+      "tool": "claude-code",
+      "category": "beginner-mistake",
+      "keywords": ["mcp", "path", "wrong", "config", "deprecated"],
+      "detect": {
+        "command": "test -f ~/.mcp.json && echo 1 || echo 0",
+        "condition": "eq",
+        "value": 1
+      },
+      "message": "MCP config at wrong location (~/.mcp.json instead of ~/.claude/)",
+      "severity": "error",
+      "fix": {
+        "command": "mv ~/.mcp.json ~/.claude/claude_code_config.json 2>/dev/null || true",
+        "description": "Move MCP config to correct location"
+      }
+    },
+    {
+      "id": "beginner-env-in-git",
+      "tool": "system",
+      "category": "beginner-mistake",
+      "keywords": ["env", "git", "secret", "exposed", "leak"],
+      "detect": {
+        "command": "git ls-files 2>/dev/null | grep -E '^\\.env$|secrets' | head -1 | wc -l | tr -d ' '",
+        "condition": "gt",
+        "value": 0
+      },
+      "message": ".env or secrets file tracked in git (SECURITY RISK)",
+      "severity": "error",
+      "fix": {
+        "manual": true,
+        "description": "Remove from git: git rm --cached .env && echo '.env' >> .gitignore"
+      }
+    },
+    {
+      "id": "beginner-node-modules-in-git",
+      "tool": "system",
+      "category": "beginner-mistake",
+      "keywords": ["node_modules", "git", "bloat"],
+      "detect": {
+        "command": "git ls-files 2>/dev/null | grep -c node_modules || echo 0",
+        "condition": "gt",
+        "value": 0
+      },
+      "message": "node_modules tracked in git (bloated repo)",
+      "severity": "warning",
+      "fix": {
+        "manual": true,
+        "description": "Remove: git rm -r --cached node_modules && echo 'node_modules/' >> .gitignore"
+      }
+    },
+    {
+      "id": "failure-doc-summarized",
+      "tool": "claude-code",
+      "category": "failure-case",
+      "keywords": ["documentation", "summarized", "verbatim", "translation"],
+      "detect": {
+        "type": "manual-check",
+        "description": "AI summarized docs instead of copying verbatim"
+      },
+      "message": "Documentation was summarized instead of copied verbatim",
+      "severity": "error",
+      "fix": {
+        "manual": true,
+        "description": "Always use: curl -s https://raw.githubusercontent.com/..."
+      }
+    },
+    {
+      "id": "failure-webfetch-verification",
+      "tool": "claude-code",
+      "category": "failure-case",
+      "keywords": ["webfetch", "verification", "ai", "interpretation"],
+      "detect": {
+        "type": "manual-check",
+        "description": "Used WebFetch for verification (introduces AI bias)"
+      },
+      "message": "WebFetch used for verification (AI interpretation bias)",
+      "severity": "warning",
+      "fix": {
+        "manual": true,
+        "description": "Use GitHub raw or curl for verification, not WebFetch"
+      }
+    },
+    {
+      "id": "failure-claimed-100-percent",
+      "tool": "claude-code",
+      "category": "failure-case",
+      "keywords": ["100%", "complete", "perfect", "claim"],
+      "detect": {
+        "type": "manual-check",
+        "description": "Claimed 100% completion without verification"
+      },
+      "message": "Claimed 100% without actual verification",
+      "severity": "warning",
+      "fix": {
+        "manual": true,
+        "description": "Always show actual command output, never claim 100%"
+      }
+    },
+    {
+      "id": "failure-opencode-not-crush",
+      "tool": "opencode",
+      "category": "failure-case",
+      "keywords": ["opencode", "crush", "renamed", "archived"],
+      "detect": {
+        "command": "command -v opencode >/dev/null && ! command -v crush >/dev/null && echo 1 || echo 0",
+        "condition": "eq",
+        "value": 1
+      },
+      "message": "Using archived OpenCode instead of Crush",
+      "severity": "warning",
+      "fix": {
+        "command": "brew uninstall opencode-ai/tap/opencode 2>/dev/null; brew install charmbracelet/tap/crush",
+        "description": "Migrate from OpenCode to Crush"
+      }
+    },
+    {
+      "id": "failure-brew-without-cask",
+      "tool": "claude-code",
+      "category": "failure-case",
+      "keywords": ["brew", "cask", "install", "claude-code"],
+      "detect": {
+        "type": "manual-check",
+        "description": "Used 'brew install claude-code' without --cask"
+      },
+      "message": "Claude Code Homebrew requires --cask flag",
+      "severity": "error",
+      "fix": {
+        "command": "brew install --cask claude-code",
+        "description": "Correct Homebrew install with --cask"
+      }
+    },
+    {
+      "id": "failure-qmd-brew-not-bun",
+      "tool": "obsidian",
+      "category": "failure-case",
+      "keywords": ["qmd", "brew", "bun", "install"],
+      "detect": {
+        "type": "manual-check",
+        "description": "Tried to install QMD with brew instead of bun"
+      },
+      "message": "QMD should be installed with bun, not brew",
+      "severity": "info",
+      "fix": {
+        "command": "bun install -g https://github.com/tobi/qmd",
+        "description": "Install QMD with bun"
+      }
+    },
+    {
+      "id": "antigravity-oauth-blocked",
+      "tool": "opencode",
+      "category": "auth",
+      "keywords": ["antigravity", "oauth", "google", "blocked"],
+      "detect": {
+        "type": "log-pattern",
+        "pattern": "OAuth.*blocked|antigravity.*fail"
+      },
+      "message": "Google Antigravity OAuth may be blocked",
+      "severity": "warning",
+      "fix": {
+        "manual": true,
+        "description": "Use alternative provider (OpenAI, Anthropic API key)"
       }
     }
   ]

@@ -646,6 +646,186 @@ run_all_doctors() {
 }
 
 #==============================================================================
+# FULL AUTO-HEAL SYSTEM
+#==============================================================================
+
+# Initialize all missing configurations with sensible defaults
+init_all_configs() {
+  log "Initializing missing configurations..."
+  echo ""
+
+  # Claude Code directories
+  mkdir -p ~/.claude/rules ~/.claude/skills
+
+  # Claude Code CLAUDE.md
+  if [ ! -f ~/.claude/CLAUDE.md ]; then
+    cat > ~/.claude/CLAUDE.md << 'CLAUDEMD'
+# User Memory
+
+## Preferences
+- Verify against official sources
+- Show command output, not just "done"
+- No emojis unless requested
+
+## Config Paths
+- MCP: ~/.claude/claude_code_config.json
+- Settings: ~/.claude/settings.json
+CLAUDEMD
+    log_ok "Created ~/.claude/CLAUDE.md"
+  fi
+
+  # Claude Code settings.json
+  if [ ! -f ~/.claude/settings.json ]; then
+    cat > ~/.claude/settings.json << 'SETTINGS'
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json"
+}
+SETTINGS
+    log_ok "Created ~/.claude/settings.json"
+  fi
+
+  # Git user config
+  if ! git config --global user.email &>/dev/null; then
+    local email
+    email=$(whoami)@$(hostname)
+    git config --global user.email "$email"
+    git config --global user.name "$(whoami)"
+    log_ok "Set git user: $email"
+  fi
+
+  # SSH key
+  if [ ! -f ~/.ssh/id_ed25519 ] && [ ! -f ~/.ssh/id_rsa ]; then
+    mkdir -p ~/.ssh
+    ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519 -N "" -C "$(whoami)@$(hostname)" 2>/dev/null
+    log_ok "Generated SSH key: ~/.ssh/id_ed25519"
+  fi
+
+  # Ghostty config
+  if [ -d "/Applications/Ghostty.app" ] && [ ! -f ~/.config/ghostty/config ]; then
+    mkdir -p ~/.config/ghostty
+    echo "# Ghostty config" > ~/.config/ghostty/config
+    log_ok "Created ~/.config/ghostty/config"
+  fi
+
+  # OpenClaw directory
+  if is_scope_active "openclaw" && [ ! -d ~/.openclaw/skills ]; then
+    mkdir -p ~/.openclaw/skills
+    log_ok "Created ~/.openclaw/skills/"
+  fi
+
+  echo ""
+  log_ok "Initialization complete"
+}
+
+# Fix invalid JSON by attempting to repair common issues
+fix_invalid_json() {
+  local file="$1"
+
+  if [ ! -f "$file" ]; then
+    return 1
+  fi
+
+  # Backup first
+  cp "$file" "${file}.bak.$(date +%s)"
+
+  # Try to fix common JSON issues
+  local content
+  content=$(cat "$file")
+
+  # Remove trailing commas before } or ]
+  content=$(echo "$content" | sed 's/,\s*}/}/g' | sed 's/,\s*]/]/g')
+
+  # Write back and validate
+  echo "$content" > "$file"
+
+  if jq empty "$file" 2>/dev/null; then
+    log_ok "Fixed JSON: $file"
+    return 0
+  else
+    # Restore backup
+    mv "${file}.bak."* "$file" 2>/dev/null
+    log_err "Could not auto-fix: $file"
+    return 1
+  fi
+}
+
+# Full healing cycle
+heal_all() {
+  echo ""
+  echo "╔══════════════════════════════════════════════════════════════╗"
+  echo "║              ERROR PREVENTION - FULL HEAL                    ║"
+  echo "║              $(date '+%Y-%m-%d %H:%M:%S')                             ║"
+  echo "╚══════════════════════════════════════════════════════════════╝"
+  echo ""
+
+  local start_time
+  start_time=$(date +%s)
+
+  # Phase 1: Detect scope
+  echo -e "${B}[1/6] SCOPE DETECTION${N}"
+  detect_scope
+
+  # Phase 2: Initialize missing configs
+  echo -e "${B}[2/6] INITIALIZATION${N}"
+  init_all_configs
+
+  # Phase 3: Scan for errors
+  echo -e "${B}[3/6] ERROR SCAN${N}"
+  local errors_before
+  errors_before=$(scan_all 2>&1 | grep -c "ERROR\|WARN" | tr -d '\n' || echo 0)
+  echo ""
+
+  # Phase 4: Auto-fix all
+  echo -e "${B}[4/6] AUTO-FIX${N}"
+  fix_all
+  echo ""
+
+  # Phase 5: Fix invalid JSON files
+  echo -e "${B}[5/6] JSON REPAIR${N}"
+  for cfg in ~/.claude/settings.json ~/.claude/claude_code_config.json ~/.openclaw/openclaw.json; do
+    if [ -f "$cfg" ] && ! jq empty "$cfg" 2>/dev/null; then
+      fix_invalid_json "$cfg"
+    fi
+  done
+  echo ""
+
+  # Phase 6: Verify
+  echo -e "${B}[6/6] VERIFICATION${N}"
+  verify_state
+  echo ""
+
+  # Final report
+  local end_time errors_after duration
+  end_time=$(date +%s)
+  duration=$((end_time - start_time))
+  errors_after=$(scan_all 2>&1 | grep -c "ERROR\|WARN" | tr -d '\n' || echo 0)
+  errors_before=${errors_before:-0}
+  errors_after=${errors_after:-0}
+
+  echo "╔══════════════════════════════════════════════════════════════╗"
+  echo "║                      HEAL COMPLETE                           ║"
+  echo "╠══════════════════════════════════════════════════════════════╣"
+  echo "║  Duration: ${duration}s                                              ║"
+  echo "║  Errors before: $errors_before                                        ║"
+  echo "║  Errors after:  $errors_after                                        ║"
+  echo "║  Fixed: $((errors_before - errors_after))                                            ║"
+  echo "╚══════════════════════════════════════════════════════════════╝"
+
+  # Generate report
+  generate_report
+
+  if [ "$errors_after" -eq 0 ]; then
+    echo ""
+    log_ok "System is healthy"
+    return 0
+  else
+    echo ""
+    log_warn "Some issues require manual attention"
+    return 1
+  fi
+}
+
+#==============================================================================
 # MAIN
 #==============================================================================
 
@@ -656,6 +836,7 @@ Error Engine v1.0
 Usage: $(basename "$0") <command>
 
 Commands:
+  heal          Full auto: detect → fix → verify → report
   scan          Detect all errors
   scope         Detect and show current scope
   scope <name>  Show config paths for scope
@@ -666,6 +847,7 @@ Commands:
   list          List all error patterns
   search <kw>   Search errors by keyword
   doctor        Run doctor for all detected tools
+  init          Initialize all missing configs
 
 Options:
   -h, --help  Show this help
@@ -683,6 +865,13 @@ main() {
   local cmd="${1:-}"
 
   case "$cmd" in
+    heal)
+      heal_all
+      ;;
+    init)
+      detect_scope
+      init_all_configs
+      ;;
     scan)
       detect_scope
       scan_all
