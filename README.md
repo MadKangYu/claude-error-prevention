@@ -1,6 +1,6 @@
 <p align="center">
   <img src="https://img.shields.io/badge/patterns-80-blue?style=for-the-badge" alt="Patterns">
-  <img src="https://img.shields.io/badge/auto--fix-86%25-green?style=for-the-badge" alt="Auto-fix">
+  <img src="https://img.shields.io/badge/auto--fix-93%25-green?style=for-the-badge" alt="Auto-fix">
   <img src="https://img.shields.io/badge/version-3.1-orange?style=for-the-badge" alt="Version">
 </p>
 
@@ -81,18 +81,18 @@ cd claude-error-prevention
 ┌─────────────────────────────────────────────────────────────┐
 │  SUPPORTED TOOLS                                            │
 ├─────────────────┬──────────┬────────────────────────────────┤
-│  Claude Code    │ 18 patterns │ ████████████████▒    83%    │
+│  Claude Code    │ 18 patterns │ ████████████████████ 100%   │
 │  Cursor IDE     │  4 patterns │ ████████████████████ 100%   │
 │  Crush/OpenCode │  6 patterns │ ████████████████▒    83%    │
 │  OpenClaw       │  7 patterns │ ████████████████████ 100%   │
-│  Obsidian/QMD   │  5 patterns │ ████████████         60%    │
+│  Obsidian/QMD   │  5 patterns │ ████████████████████ 100%   │
 │  Oh My OpenCode │  5 patterns │ ████████████████     80%    │
 │  MCP Servers    │  4 patterns │ ████████████████████ 100%   │
 │  API Providers  │  4 patterns │ ████████████████████ 100%   │
-│  System         │ 25 patterns │ ████████████████▒    84%    │
+│  System         │ 25 patterns │ █████████████████▒   88%    │
 │  Terminal       │  2 patterns │ ████████████████████ 100%   │
 └─────────────────┴──────────┴────────────────────────────────┘
-                               └── Auto-fix percentage (86% overall)
+                               └── Auto-fix percentage (93% overall)
 ```
 
 ---
@@ -314,7 +314,7 @@ MIT
 ---
 
 <p align="center">
-  <strong>80 patterns · 86% auto-fix · Zero configuration</strong>
+  <strong>80 patterns · 93% auto-fix · Zero configuration</strong>
 </p>
 
 <p align="center">

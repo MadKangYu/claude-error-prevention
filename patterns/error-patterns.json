@@ -299,8 +299,9 @@
       "message": "Obsidian vault not found at default location",
       "severity": "warning",
       "fix": {
-        "manual": true,
-        "description": "Set correct vault path in Obsidian settings"
+        "command": "echo '🔍 Searching for Obsidian vaults...' && find ~ -maxdepth 4 -type d -name '.obsidian' 2>/dev/null | sed 's/\\/.obsidian$//' | head -5 && echo '' && echo '💡 Set OBSIDIAN_VAULT env var:' && echo 'export OBSIDIAN_VAULT=\"/path/to/your/vault\"'",
+        "description": "Search for existing vaults and show how to configure",
+        "verify": "test -d \"${OBSIDIAN_VAULT:-~/Obsidian/Vault}\" && echo 'Vault found'"
       }
     },
     {
@@ -366,8 +367,9 @@
       "message": "Orphaned notes detected (no incoming/outgoing links)",
       "severity": "info",
       "fix": {
-        "manual": true,
-        "description": "Review orphaned notes in Graph View"
+        "command": "VAULT=${OBSIDIAN_VAULT:-~/Obsidian/Vault} && echo '🔍 Finding orphaned notes (no [[links]])...' && find \"$VAULT\" -name '*.md' -exec grep -L '\\[\\[' {} \\; 2>/dev/null | head -10 && echo '' && echo '💡 Review in Obsidian: Graph View > Filters > Orphans'",
+        "description": "List notes without wiki-links for review",
+        "verify": "echo 'Check Graph View in Obsidian for visual review'"
       }
     },
     {
@@ -814,8 +816,9 @@
       "message": "Claimed 100% without actual verification",
       "severity": "warning",
       "fix": {
-        "manual": true,
-        "description": "Always show actual command output, never claim 100%"
+        "command": "echo '⚠️ Never claim 100% without evidence!' && echo '' && echo '✅ Correct approach:' && echo '1. Run actual verification command' && echo '2. Show raw output (not interpreted)' && echo '3. State what was verified: \"X of Y tests pass\"' && echo '' && echo '❌ Avoid:' && echo '- \"All done!\" without proof' && echo '- \"100% complete\" claims' && echo '- Summarizing instead of showing output'",
+        "description": "Show guidelines for evidence-based completion claims",
+        "example": "echo 'Tests: 42/42 passed' (actual output, not claim)"
       }
     },
     {
@@ -988,8 +991,9 @@
       "message": "Consider using fallback provider",
       "severity": "info",
       "fix": {
-        "manual": true,
-        "description": "Switch to: Anthropic→OpenAI→Gemini→Groq"
+        "command": "echo '🔄 Fallback provider priority:' && echo '' && echo '1. Anthropic (Claude) - Best for coding' && echo '   export ANTHROPIC_API_KEY=sk-ant-...' && echo '' && echo '2. OpenAI (GPT-4) - Good alternative' && echo '   export OPENAI_API_KEY=sk-...' && echo '' && echo '3. Google (Gemini) - Free tier available' && echo '   export GOOGLE_API_KEY=...' && echo '' && echo '4. Groq (Llama) - Fast, free tier' && echo '   export GROQ_API_KEY=gsk_...' && echo '' && echo '5. OpenRouter - Multi-provider gateway' && echo '   export OPENROUTER_API_KEY=sk-or-...'",
+        "description": "Show fallback provider options with setup commands",
+        "verify": "env | grep -E 'ANTHROPIC|OPENAI|GOOGLE|GROQ|OPENROUTER' | wc -l"
       }
     },
     {
@@ -1190,8 +1194,9 @@
       "message": "MCP server crashed or failed to start",
       "severity": "error",
       "fix": {
-        "manual": true,
-        "description": "Check MCP config, verify command path exists"
+        "command": "echo '🔍 MCP config check:' && CONFIG=~/.claude/claude_code_config.json && test -f $CONFIG && jq -r '.mcpServers | keys[]' $CONFIG 2>/dev/null || echo 'No MCP config found' && echo '' && echo '💡 Common fixes:' && echo '1. Use absolute paths: which npx → /usr/local/bin/npx' && echo '2. Test manually: npx -y @anthropic-ai/mcp-server-name' && echo '3. Check stderr: command 2>&1 | head'",
+        "description": "Check MCP config and show common fixes",
+        "verify": "jq empty ~/.claude/claude_code_config.json 2>/dev/null && echo 'Config valid'"
       }
     },
     {
@@ -1212,8 +1217,9 @@
       "message": "MCP server returned invalid response",
       "severity": "error",
       "fix": {
-        "manual": true,
-        "description": "Check MCP server logs, verify JSON output"
+        "command": "echo '🔍 MCP response debugging:' && echo '1. Server must output ONLY valid JSON-RPC to stdout' && echo '2. Debug logs must go to stderr (console.error)' && echo '' && echo '💡 Test your server:' && echo 'echo {\"jsonrpc\":\"2.0\",\"method\":\"initialize\",\"id\":1} | your-mcp-server 2>/dev/null | jq .' && echo '' && echo '❌ Common issue: console.log() in server code breaks JSON-RPC'",
+        "description": "Show how to debug MCP server JSON-RPC output",
+        "verify": "echo 'Test server manually with JSON-RPC initialize request'"
       }
     },
     {
