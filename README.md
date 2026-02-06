@@ -19,7 +19,7 @@
 ║    │  Claude Code · OpenClaw · Oh-my-OpenCode · OpenCode                     │   ║
 ║    │  AI 오답노트 · Error Journal · Troubleshooting Database                  │   ║
 ║    │                                                                         │   ║
-║    │  Patterns: 83  |  Auto-Fix: 100%  |  Version: 3.1.0                     │   ║
+║    │  Patterns: 83  |  Auto-Fix: 100%  |  Version: 4.0.0                     │   ║
 ║    └─────────────────────────────────────────────────────────────────────────┘   ║
 ║                                                                                  ║
 ╚══════════════════════════════════════════════════════════════════════════════════╝
@@ -28,7 +28,8 @@
 <p align="center">
   <img src="https://img.shields.io/badge/patterns-83-blue?style=for-the-badge" alt="Patterns">
   <img src="https://img.shields.io/badge/auto--fix-100%25-brightgreen?style=for-the-badge" alt="Auto-fix">
-  <img src="https://img.shields.io/badge/version-3.1.0-orange?style=for-the-badge" alt="Version">
+  <img src="https://img.shields.io/badge/version-4.0.0-orange?style=for-the-badge" alt="Version">
+  <img src="https://img.shields.io/badge/docs-100%25_synced-success?style=for-the-badge" alt="Docs">
 </p>
 
 <h1 align="center">Claude Code · OpenClaw · Oh-my-OpenCode · OpenCode</h1>
@@ -532,6 +533,76 @@ timeout 5 openclaw status --json 2>&1 | head -5
 | **증상** | 프로젝트 컨텍스트 없이 동작 |
 | **해결** | `crush` 실행 후 `/init` 명령어 |
 
+### 사례 4: Local Model 연결
+
+```
+에러: Ollama connection failed
+에러: LM Studio not responding
+```
+
+| 항목 | 내용 |
+|------|------|
+| **증상** | 로컬 모델 연결 안 됨 |
+| **원인** | 서버가 실행 중이 아님 또는 포트 오류 |
+| **해결** | Ollama: `ollama serve` / LM Studio: 서버 시작 확인 |
+| **설정 예시** | [opencode-errors.md](docs/opencode-errors.md#local-models-crush) 참조 |
+
+---
+
+## 🔍 QMD (Local Markdown Search) 에러 사례
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│   ██████╗ ███╗   ███╗██████╗                                                 │
+│  ██╔═══██╗████╗ ████║██╔══██╗                                                │
+│  ██║   ██║██╔████╔██║██║  ██║                                                │
+│  ██║▄▄ ██║██║╚██╔╝██║██║  ██║                                                │
+│  ╚██████╔╝██║ ╚═╝ ██║██████╔╝                                                │
+│   ╚══▀▀═╝ ╚═╝     ╚═╝╚═════╝                                                 │
+│                                                                              │
+│   Query Markup Documents  |  Local AI Search  |  BM25 + Vector + LLM        │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+### 사례 1: SQLite Extension Error (macOS)
+
+```
+에러: Cannot load SQLite extension
+```
+
+| 항목 | 내용 |
+|------|------|
+| **증상** | qmd 설치 후 실행 실패 |
+| **원인** | macOS 기본 SQLite에 extension 지원 없음 |
+| **해결** | `brew install sqlite` |
+
+### 사례 2: Embedding Failed
+
+```
+에러: Failed to generate embeddings
+에러: Model download failed
+```
+
+| 항목 | 내용 |
+|------|------|
+| **증상** | `qmd embed` 실패 |
+| **원인** | GGUF 모델 다운로드 실패 또는 디스크 공간 부족 |
+| **해결** | `rm -rf ~/.cache/qmd/models && qmd embed` |
+| **필요 공간** | ~2GB (embeddinggemma + qwen3-reranker + query-expansion) |
+
+### 사례 3: Collection Not Found
+
+```
+에러: Collection 'vault' not found
+```
+
+| 항목 | 내용 |
+|------|------|
+| **증상** | 검색 결과 없음 |
+| **원인** | 컬렉션 미등록 |
+| **해결** | `qmd collection add ~/Obsidian/Vault --name vault && qmd embed` |
+| **확인** | `qmd collection list` |
+
 ---
 
 ## 🔌 MCP Server 에러 사례
@@ -663,6 +734,21 @@ timeout 5 openclaw status --json 2>&1 | head -5
 
 ---
 
+## 📚 문서
+
+모든 문서는 공식 소스와 100% 동기화되어 있습니다 (2026-02-07).
+
+| 문서 | 설명 | 공식 소스 |
+|------|------|-----------|
+| [Installation Guide](docs/installation.md) | 설치 방법 (Claude Code, Crush, QMD) | code.claude.com, charmbracelet/crush, tobi/qmd |
+| [Claude Code Errors](docs/claude-code-errors.md) | Claude Code 에러 패턴 18개 | code.claude.com/troubleshooting |
+| [OpenCode/Crush Errors](docs/opencode-errors.md) | OpenCode/Crush 에러 패턴 8개 | charmbracelet/crush |
+| [OpenClaw Errors](docs/openclaw-errors.md) | OpenClaw 에러 패턴 10개 | openclaw.ai |
+| [Obsidian Errors](docs/obsidian-errors.md) | Obsidian + QMD 에러 패턴 15개 | tobi/qmd |
+| [Context Window](docs/context-window-ultimate.md) | Context 관리 SOTA 가이드 | 실전 경험 |
+
+---
+
 ## 문제가 생기면?
 
 ### 1. 다시 실행해보기
@@ -761,9 +847,16 @@ MIT - 무료로 사용, 수정, 배포 가능
 ---
 
 <p align="center">
-  <strong>80가지 오류 패턴 · 100% 자동 수정 · 설정 필요 없음</strong>
+  <strong>83가지 오류 패턴 · 100% 자동 수정 · 공식 문서 동기화</strong>
 </p>
 
 <p align="center">
   <sub>AI 도구 사용이 어려우셨나요? 이제 이 도구가 도와드립니다.</sub>
+</p>
+
+<p align="center">
+  <sub>
+    <b>Last synced:</b> 2026-02-07 |
+    <b>Sources:</b> code.claude.com · charmbracelet/crush · tobi/qmd
+  </sub>
 </p>
