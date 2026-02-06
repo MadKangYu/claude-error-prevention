@@ -1,134 +1,203 @@
-# OpenCode Error Patterns
+# OpenCode / Crush Error Patterns
+
+> **IMPORTANT:** OpenCode has been renamed to **Crush** by Charmbracelet (2026).
+> The old `opencode-ai/opencode` repository is archived.
+
+---
 
 ## Installation
 
-### Official Methods (2026-02-07)
+### Crush (Current - Charmbracelet)
 
 ```bash
-# Recommended
-curl -fsSL https://opencode.ai/install | bash
+# Homebrew (recommended)
+brew install charmbracelet/tap/crush
 
-# Package managers
-brew install anomalyco/tap/opencode    # macOS/Linux (최신)
-brew install opencode                   # macOS/Linux (덜 최신)
-npm i -g opencode-ai@latest             # npm
-scoop install opencode                  # Windows
-choco install opencode                  # Windows
-paru -S opencode-bin                    # Arch Linux
+# npm
+npm install -g @charmland/crush
+
+# Windows
+winget install charmbracelet.crush
 ```
 
-### Common Mistakes
+### Legacy OpenCode (Archived)
 
-| Mistake | Problem | Fix |
-|---------|---------|-----|
-| 구버전 설치 | 0.1.x 이전 버전 충돌 | 구버전 먼저 삭제 후 설치 |
-| brew vs brew tap 혼동 | 버전 불일치 | `anomalyco/tap/opencode` 사용 |
-| npm 구버전 캐시 | 최신 아님 | `npm i -g opencode-ai@latest` |
+```bash
+# No longer maintained
+brew install opencode-ai/tap/opencode
+```
+
+**Source:** https://github.com/charmbracelet/crush
+
+---
 
 ## Configuration
 
 ### Config File Locations
 
 ```
-$HOME/.config/opencode/opencode.json    # 메인 설정
-$HOME/.config/opencode/.mcp.json        # MCP 설정
-$HOME/.config/opencode/AGENTS.md        # 에이전트 설정
-./.opencode.json                        # 프로젝트별
+$HOME/.crush.json                       # New Crush config
+$HOME/.config/crush/.crush.json         # XDG location
+./.crush.json                           # Project-specific
+
+# Legacy OpenCode locations
+$HOME/.config/opencode/opencode.json    # Old config
+$HOME/.config/opencode/.mcp.json        # Old MCP
 ```
-
-### Common Config Errors
-
-| Mistake | Problem | Fix |
-|---------|---------|-----|
-| Claude Code 경로 사용 | `~/.claude/` 에 설정 | `~/.config/opencode/` 사용 |
-| AGENTS.md 없음 | 에이전트 동작 안 함 | `/init` 실행 |
-| provider API key 누락 | 인증 실패 | 환경변수 또는 config에 추가 |
 
 ### Environment Variables
 
 ```bash
-# Required (하나 이상)
+# Required (at least one)
 ANTHROPIC_API_KEY=      # Claude
 OPENAI_API_KEY=         # OpenAI
 GEMINI_API_KEY=         # Google
 GROQ_API_KEY=           # Groq
+GITHUB_TOKEN=           # GitHub Copilot
 
 # Optional
-OPENCODE_INSTALL_DIR=   # 설치 경로
-XDG_BIN_DIR=            # XDG 경로
+VERTEXAI_PROJECT=       # Google Cloud
+AWS_ACCESS_KEY_ID=      # AWS Bedrock
+AZURE_OPENAI_ENDPOINT=  # Azure OpenAI
 ```
 
-## Agent Modes
-
-| Mode | Purpose | Permissions |
-|------|---------|-------------|
-| **build** | 개발 작업 (기본) | Full access |
-| **plan** | 분석/탐색 | Read-only, 명령어 허가 필요 |
-| **general** | 복잡한 검색 | Subagent (`@general`) |
-
-### Mode Switch
-- `Tab` 키로 build ↔ plan 전환
+---
 
 ## Common Errors
 
 ### 1. Provider Connection
 
+**Error:**
 ```
 Error: No API key found
 ```
-**Fix**: 환경변수 설정 또는 `/connect` 실행
+
+**Fix:** Set environment variable or configure in config file:
+```json
+{
+  "providers": {
+    "anthropic": {
+      "apiKey": "sk-ant-..."
+    }
+  }
+}
+```
+
+---
 
 ### 2. Old Version Conflict
 
+**Error:**
 ```
 Error: Incompatible version
 ```
-**Fix**:
-```bash
-# 구버전 삭제
-npm uninstall -g opencode-ai
-rm -rf ~/.config/opencode  # 필요시
 
-# 재설치
-brew install anomalyco/tap/opencode
+**Fix:**
+```bash
+# Remove old OpenCode
+npm uninstall -g opencode-ai
+rm -rf ~/.config/opencode
+
+# Install Crush
+brew install charmbracelet/tap/crush
 ```
+
+---
 
 ### 3. MCP Server Issues
 
+**Error:**
 ```
 Error: MCP connection failed
 ```
-**Fix**: `.mcp.json` 경로 및 형식 확인
 
-## Schema Errors
+**Fix:** Check MCP config format and paths:
+```json
+{
+  "mcpServers": {
+    "server-name": {
+      "command": "path/to/server",
+      "args": []
+    }
+  }
+}
+```
 
-### uint64 Format Warning
+---
 
+### 4. uint64 Schema Warning
+
+**Warning:**
 ```
 unknown format "uint64" ignored in schema at path "#/properties/lastModifiedTime"
-unknown format "uint64" ignored in schema at path "#/$defs/MaterializedViewDefinition/properties/refreshIntervalMs"
-unknown format "uint64" ignored in schema at path "#/properties/numRows"
 ```
 
-| Field | Cause | Impact |
-|-------|-------|--------|
-| `uint64` format | JSON Schema 표준에 없는 타입 | 경고만, 기능 정상 |
-| MCP schema | MCP 서버가 비표준 스키마 사용 | 무시해도 됨 |
+**Cause:** MCP server uses non-standard JSON Schema format
 
-**해결**: 무시 가능 (Warning only, not error)
+**Impact:** Warning only, functionality not affected
 
-MCP 서버 제작자가 스키마에 `"format": "uint64"` 대신 `"type": "integer"`를 사용해야 함.
+**Action:** Safe to ignore. MCP server author should use `"type": "integer"` instead.
+
+---
+
+## Migration: OpenCode → Crush
+
+### Steps
+
+1. **Backup old config:**
+   ```bash
+   cp -r ~/.config/opencode ~/.config/opencode.bak
+   ```
+
+2. **Uninstall OpenCode:**
+   ```bash
+   brew uninstall opencode-ai/tap/opencode
+   # or
+   npm uninstall -g opencode-ai
+   ```
+
+3. **Install Crush:**
+   ```bash
+   brew install charmbracelet/tap/crush
+   ```
+
+4. **Migrate config:**
+   ```bash
+   # Config format is similar, may need minor adjustments
+   mv ~/.config/opencode/.opencode.json ~/.crush.json
+   ```
+
+---
 
 ## Verification
 
 ```bash
-# 버전 확인
-opencode --version
+# Check installation
+crush --version
 
-# 설정 확인
-cat ~/.config/opencode/opencode.json | jq '.provider'
+# Verify config
+cat ~/.crush.json | jq '.providers | keys'
 
-# Provider 연결 테스트
-opencode
-/connect
+# Test connection
+crush
+# Then type: /connect
 ```
+
+---
+
+## Features Comparison
+
+| Feature | OpenCode (Archived) | Crush (Current) |
+|---------|---------------------|-----------------|
+| Multi-Model | Yes | Yes |
+| MCP Support | Yes | Yes (http, stdio, sse) |
+| LSP Integration | Yes | Yes |
+| Session Management | Yes | Yes |
+| Active Development | No | Yes |
+
+---
+
+## Sources
+
+- [Crush GitHub](https://github.com/charmbracelet/crush)
+- [OpenCode GitHub (Archived)](https://github.com/opencode-ai/opencode)

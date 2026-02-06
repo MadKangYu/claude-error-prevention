@@ -300,8 +300,8 @@
       "message": "qmd not installed (local markdown search)",
       "severity": "info",
       "fix": {
-        "command": "brew install tobi/tap/qmd || go install github.com/tobi/qmd@latest",
-        "description": "Install qmd for markdown search"
+        "command": "bun install -g https://github.com/tobi/qmd",
+        "description": "Install qmd for markdown search (requires bun)"
       }
     }
   ]
