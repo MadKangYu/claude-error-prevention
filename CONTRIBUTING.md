@@ -1,229 +1,220 @@
-# Contributing to Claude Error Prevention
+# Contributing: AI 오답노트 (Error Journal)
 
-Thank you for your interest in contributing! This guide will help you get started.
-
-```
-                    CONTRIBUTION FLOW
-                    
-    ┌─────────┐     ┌─────────┐     ┌─────────┐     ┌─────────┐
-    │  Fork   │ ──▶ │  Edit   │ ──▶ │  Test   │ ──▶ │   PR    │
-    └─────────┘     └─────────┘     └─────────┘     └─────────┘
-         │               │               │               │
-         ▼               ▼               ▼               ▼
-      GitHub         patterns/       ./heal         Review
-      Fork           docs/           command        & Merge
-```
+> 실전에서 겪은 에러를 기록하여 같은 실수를 반복하지 않게 합니다.
 
 ---
 
-## Quick Start
+## ⚠️ 보안 경고 (CRITICAL)
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ 🚨 커밋 전 반드시 확인!                                                        │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  ❌ 절대 커밋 금지:                                                           │
+│     - API 키 (sk-ant-*, sk-*, gsk_*)                                         │
+│     - 토큰 (OAuth, bot token, access token)                                  │
+│     - 비밀번호, 개인정보                                                      │
+│     - .env 파일                                                              │
+│     - auth-profiles.json, credentials.json                                   │
+│                                                                              │
+│  ✅ 마스킹 필수:                                                              │
+│     - API 키: sk-ant-xxx...xxx (앞뒤 3자만)                                   │
+│     - 토큰: 123456:ABC...XYZ                                                 │
+│     - 이메일: u***@example.com                                               │
+│     - 경로: /Users/USERNAME/... → ~/...                                      │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+### 커밋 전 체크리스트
 
 ```bash
-# 1. Fork and clone
-git clone https://github.com/YOUR_USERNAME/claude-error-prevention.git
-cd claude-error-prevention
+# 1. 민감 정보 검색
+git diff --staged | grep -iE "sk-|api.?key|token|secret|password|credential"
 
-# 2. Make changes
-# Edit patterns/error-patterns.json or docs/*.md
+# 2. .env 파일 확인
+git status | grep -E "\.env"
 
-# 3. Test locally
-./src/error-engine.sh scan
+# 3. 큰 파일 확인 (실수로 로그 포함)
+git diff --staged --stat | grep -E "\+[0-9]{4,}"
+```
 
-# 4. Submit PR
-git checkout -b feature/your-feature
-git add -A && git commit -m "feat: add new error pattern"
-git push origin feature/your-feature
+### 실수로 커밋했다면
+
+```bash
+# 1. 즉시 푸시 중지!
+
+# 2. 커밋 취소 (푸시 전)
+git reset --soft HEAD~1
+
+# 3. 이미 푸시했다면
+#    - GitHub에서 즉시 삭제
+#    - 해당 키/토큰 즉시 revoke
+#    - 새 키 발급
 ```
 
 ---
 
-## Types of Contributions
+## 철학
 
-### 1. New Error Patterns
+```
+"에러 발생 후 고치지 말고, 발생 전에 막아라" — Andrej Karpathy
+```
 
-Add patterns to `patterns/error-patterns.json`:
+이 저장소는 **AI 오답노트**입니다:
+- 실제 겪은 에러 → 패턴으로 기록
+- Claude Code가 자동 참조 → 같은 실수 반복 방지
+- 커뮤니티 공유 → 모두가 같은 삽질 안 함
+
+---
+
+## 에러 추가 방법
+
+### 1. 에러를 겪었을 때
+
+```bash
+# 1. 에러 메시지 복사
+# 2. 원인 파악
+# 3. 해결책 기록
+# 4. 이 저장소에 PR
+```
+
+### 2. 패턴 추가 (patterns/error-patterns.json)
 
 ```json
 {
-  "id": "tool-error-name",
-  "tool": "claude-code|crush|openclaw|obsidian|oh-my-opencode",
-  "category": "installation|config|runtime|network|quota",
-  "keywords": ["error", "message", "keywords"],
+  "id": "에러-고유-id",
+  "tool": "claude-code|opencode|openclaw|obsidian|system",
+  "category": "카테고리",
+  "keywords": ["검색", "키워드", "에러메시지일부"],
   "detect": {
-    "command": "shell command to detect",
-    "condition": "gt|lt|eq|contains",
-    "value": 1
+    "type": "log-pattern",
+    "pattern": "에러 메시지 정규식"
   },
-  "message": "Human-readable error description",
+  "message": "사람이 읽을 에러 설명",
   "severity": "error|warning|info",
   "fix": {
-    "command": "auto-fix command (optional)",
-    "description": "How to fix manually"
+    "command": "자동 수정 명령어",
+    "description": "수정 방법 설명",
+    "verify": "수정 확인 명령어"
   }
 }
 ```
 
-**Requirements:**
-- Unique `id` with tool prefix (e.g., `claude-mcp-timeout`)
-- At least 3 keywords for searchability
-- Reproducible `detect` command
-- Clear `message` and `fix.description`
+### 3. 문서 추가 (docs/*.md)
 
-### 2. Documentation
-
-Add or improve docs in `docs/`:
-
-| File | Purpose |
-|------|---------|
-| `*-errors.md` | Tool-specific error guides |
-| `glossary.md` | Korean → English terms |
-| `error-examples.md` | Real error message samples |
-
-**Documentation Standards:**
-- Use ASCII diagrams for visual explanations
-- Include actual error messages in code blocks
-- Link to official documentation sources
-- Add verification commands
-
-### 3. Auto-Fix Scripts
-
-Add fix commands to patterns:
-
-```json
-{
-  "fix": {
-    "command": "npm uninstall -g @anthropic-ai/claude-code",
-    "description": "Remove deprecated npm installation"
-  }
-}
-```
-
-**Requirements:**
-- Command must be idempotent (safe to run multiple times)
-- Must not require sudo without explicit warning
-- Include rollback instructions if destructive
+상세한 설명이 필요하면 docs/ 폴더에 문서 추가:
+- 에러 발생 상황
+- 잘못된 시도들 (오답)
+- 올바른 해결책
+- 얻은 교훈
 
 ---
 
-## Pattern Guidelines
+## 실전 예시: OpenClaw OAuth 오답노트
 
-### ID Naming Convention
-
+### 에러 메시지 (거짓)
 ```
-{tool}-{category}-{specific-error}
-
-Examples:
-  claude-install-duplicate
-  crush-config-invalid-json
-  openclaw-auth-token-expired
-  obsidian-sync-conflict
+FailoverError: OAuth token refresh failed for anthropic
 ```
 
-### Severity Levels
+### 잘못된 시도들 (오답)
+| 시도 | 결과 |
+|------|------|
+| OAuth 재인증 | ❌ 실패 |
+| Model 변경 | ❌ 실패 |
+| Timeout 증가 | ❌ 실패 |
 
-| Level | When to Use |
-|-------|-------------|
-| `error` | Blocks functionality, needs immediate fix |
-| `warning` | Degraded experience, should fix soon |
-| `info` | Informational, optional improvement |
+### 진짜 원인
+- OAuth가 아니라 **WebSocket 채널**이 죽어있었음
+- HTTP는 OK, WS는 Dead
+- 에러 메시지가 거짓말함
 
-### Detection Commands
+### 올바른 해결책
+```bash
+launchctl unload ~/Library/LaunchAgents/ai.openclaw.gateway.plist
+sleep 2
+launchctl load ~/Library/LaunchAgents/ai.openclaw.gateway.plist
+```
+
+### 교훈
+1. 에러 메시지를 그대로 믿지 마라
+2. 인프라(Process→HTTP→WS) 순서로 체크
+3. `openclaw gateway restart`보다 `launchctl load`가 확실
+
+---
+
+## Claude Code 연동
+
+이 저장소를 Claude Code가 자동 참조하게 설정:
+
+### 방법 1: rules 폴더에 링크
 
 ```bash
-# Good: Specific, fast, returns clear result
-which -a claude 2>/dev/null | wc -l
-
-# Bad: Slow, unclear output
-find / -name "claude" 2>/dev/null
+# ~/.claude/rules/ 에 심볼릭 링크
+ln -sf /path/to/claude-error-prevention/docs ~/.claude/rules/error-patterns
 ```
 
----
+### 방법 2: CLAUDE.md에 참조 추가
 
-## Testing Your Changes
+```markdown
+# ~/.claude/CLAUDE.md
 
-### 1. Validate JSON
+## Error Prevention
+에러 발생 시 참조: https://github.com/MadKangYu/claude-error-prevention
+
+주요 패턴:
+- OpenClaw OAuth 에러 → WS 먼저 체크
+- Claude Code 중복 설치 → npm 버전 제거
+- 공식 명령어도 실패할 수 있음 → 직접 launchctl 사용
+```
+
+### 방법 3: 자동 스크립트
 
 ```bash
-jq . patterns/error-patterns.json > /dev/null
-# No output = valid JSON
-```
-
-### 2. Run Scan
-
-```bash
-./src/error-engine.sh scan
-```
-
-### 3. Test Specific Pattern
-
-```bash
-./src/error-engine.sh search "your-pattern-id"
-```
-
-### 4. Run Full Heal
-
-```bash
-./src/error-engine.sh heal
+# 에러 발생 시 자동 검색
+./error-engine.sh search "에러메시지일부"
 ```
 
 ---
 
-## Commit Message Format
+## PR 가이드라인
 
-```
-type: short description
+### 필수 정보
+- [ ] 에러 메시지 (정확히)
+- [ ] 실패한 시도들 (오답)
+- [ ] 성공한 해결책 (정답)
+- [ ] 얻은 교훈
 
-Types:
-  feat     - New feature or pattern
-  fix      - Bug fix
-  docs     - Documentation only
-  refactor - Code restructuring
-  test     - Testing changes
-  chore    - Maintenance tasks
-```
-
-**Examples:**
-```
-feat: add claude-mcp-server-crash pattern
-fix: correct detection command for crush config
-docs: update oh-my-opencode troubleshooting guide
-```
+### 권장 정보
+- [ ] 재현 조건
+- [ ] 스크린샷/로그
+- [ ] 공식 문서 링크
+- [ ] 자동 수정 명령어
 
 ---
 
-## Pull Request Process
+## 카테고리
 
-1. **Title**: Use commit message format
-2. **Description**: Explain what and why
-3. **Testing**: Describe how you tested
-4. **Checklist**:
-   - [ ] JSON is valid (`jq .` passes)
-   - [ ] `./src/error-engine.sh scan` runs without errors
-   - [ ] Documentation updated if needed
-   - [ ] No secrets or personal paths in code
-
----
-
-## Code of Conduct
-
-- Be respectful and constructive
-- Focus on the technical merits
-- Help newcomers learn
-- Give credit where due
+| 카테고리 | 설명 |
+|----------|------|
+| `installation` | 설치 관련 |
+| `config` | 설정 파일 |
+| `gateway` | Gateway/서비스 |
+| `auth` | 인증/OAuth |
+| `telegram` | Telegram 봇 |
+| `beginner-mistake` | 초보자 실수 |
+| `failure-case` | AI 실패 케이스 |
+| `korean-error` | 한국어 특수 케이스 |
 
 ---
 
-## Questions?
+## 기여자
 
-- Open an [issue](https://github.com/MadKangYu/claude-error-prevention/issues)
-- Check existing [discussions](https://github.com/MadKangYu/claude-error-prevention/discussions)
-
----
-
-## License
-
-By contributing, you agree that your contributions will be licensed under the MIT License.
+에러를 공유해주신 분들:
+- @MadKangYu - OpenClaw Self-Healing, Claude Code patterns
 
 ---
 
-*Thank you for helping make AI coding agents more reliable!*
+*이 저장소는 AI가 같은 실수를 반복하지 않도록 하는 집단 지성입니다.*

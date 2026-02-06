@@ -23,6 +23,44 @@ npm-debug.log*
 dist/
 build/
 
-# Environment
+# Environment & Secrets (CRITICAL - 개인정보 보호)
 .env
 .env.*
+.env.local
+.env.*.local
+
+# API Keys & Tokens (절대 커밋 금지!)
+**/api-key*
+**/apikey*
+**/secret*
+**/token*
+**/credential*
+**/auth-profiles.json
+**/*_key.json
+**/*_token.json
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Config with potential secrets
+**/openclaw.json
+**/settings.local.json
+**/config.local.json
+**/.mcp.json
+
+# Personal data
+**/personal/
+**/private/
+**/.private/
+
+# History & Logs with potential PII
+**/history/
+**/*.history
+**/chat-*.json
+**/conversation-*.json
+
+# Backup files (may contain secrets)
+*.bak
+*.backup
+*.old
