@@ -184,7 +184,78 @@ nvm install --lts
 
 ---
 
-### 1.5 WSL: Sandbox Dependencies Missing
+### 1.5 WSL: nvm Version Conflicts
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ SYMPTOM                                                                      │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  Node version keeps reverting to Windows version                             │
+│  which npm shows /mnt/c/... path instead of Linux path                       │
+│  Broken functionality after switching Node versions with nvm in WSL          │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+**Cause:** WSL imports Windows PATH by default, Windows nvm/npm takes priority
+
+**Solution 1: Ensure nvm loads in non-interactive shells (Recommended)**
+
+Add to `~/.bashrc` or `~/.zshrc`:
+```bash
+# Load nvm if it exists
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
+```
+
+Or run directly:
+```bash
+source ~/.nvm/nvm.sh
+```
+
+**Solution 2: Adjust PATH order**
+
+Add to shell config:
+```bash
+export PATH="$HOME/.nvm/versions/node/$(node -v)/bin:$PATH"
+```
+
+> ⚠️ **Avoid**: Disabling Windows PATH (`appendWindowsPath = false`) breaks Windows executable calls from WSL.
+
+---
+
+### 1.6 Alpine Linux: Missing Dependencies
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ ERROR                                                                        │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  Error: GLIBC_2.x not found                                                  │
+│  Or: musl/uClibc compatibility issues                                        │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+**Cause:** Alpine uses musl libc, not glibc
+
+**Solution:**
+```bash
+# Install required dependencies
+apk add libgcc libstdc++ ripgrep
+
+# Install Claude Code
+curl -fsSL https://claude.ai/install.sh | bash
+
+# Set environment
+export USE_BUILTIN_RIPGREP=0
+```
+
+---
+
+### 1.8 WSL: Sandbox Dependencies Missing
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────────┐
@@ -209,7 +280,7 @@ sudo dnf install bubblewrap socat
 
 ---
 
-### 1.6 Linux/Mac: Permission Errors
+### 1.9 Linux/Mac: Permission Errors
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────────┐
@@ -768,170 +839,45 @@ rm -rf ~/.config/claude-code/auth.json
 
 ---
 
-## 10. GitHub Issues (실제 버그 - 2026-02-07)
+## 10. Markdown Formatting Issues
 
-> 공식 GitHub에서 수집한 실제 버그 패턴
-
-### 10.1 Context Deadlock
+### 10.1 Missing Language Tags in Code Blocks
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────────┐
-│ BUG: Deadlock - context limit reached but /compact and rewind both fail      │
+│ SYMPTOM                                                                      │
 ├──────────────────────────────────────────────────────────────────────────────┤
 │                                                                              │
-│  증상:                                                                        │
-│  - Context 한계 도달                                                          │
-│  - /compact 실행 → "Conversation too long" 에러                              │
-│  - rewind 실행 → 동일 에러                                                    │
-│  - 완전히 막힘                                                                │
+│  Generated markdown has code blocks without language tags:                   │
 │                                                                              │
-│  해결:                                                                        │
-│  1. 새 세션 시작 (/new 또는 claude 재실행)                                    │
-│  2. 50% context에서 미리 /compact                                             │
+│  ```                                                                         │
+│  function example() { return "hello"; }                                      │
+│  ```                                                                         │
+│                                                                              │
+│  Instead of:                                                                 │
+│  ```javascript                                                               │
+│  function example() { return "hello"; }                                      │
+│  ```                                                                         │
 │                                                                              │
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
 
-**Source:** [GitHub Issue](https://github.com/anthropics/claude-code/issues)
+**Solutions:**
+1. Request: "Add appropriate language tags to all code blocks"
+2. Set up PostToolUse formatting hooks
+3. Manual review after generation
 
-### 10.2 MCP Server Instructions Not Passed
+### 10.2 Inconsistent Spacing
 
-```
-┌──────────────────────────────────────────────────────────────────────────────┐
-│ BUG: MCP server instructions from initialize response are not passed         │
-├──────────────────────────────────────────────────────────────────────────────┤
-│                                                                              │
-│  증상:                                                                        │
-│  - MCP 서버의 instructions가 모델에 전달 안됨                                  │
-│  - MCP 서버 특정 동작이 무시됨                                                │
-│                                                                              │
-│  해결:                                                                        │
-│  - CLAUDE.md에 MCP 사용법 명시적으로 기재                                     │
-│  - 프롬프트에서 직접 MCP 도구 사용 지시                                       │
-│                                                                              │
-└──────────────────────────────────────────────────────────────────────────────┘
-```
+**Solutions:**
+1. Request: "Fix spacing and formatting issues in this markdown file"
+2. Use formatting tools (prettier) via hooks
+3. Document preferences in `CLAUDE.md`
 
-### 10.3 Settings Ignored
-
-```
-┌──────────────────────────────────────────────────────────────────────────────┐
-│ BUG: settings.json 설정이 무시됨                                              │
-├──────────────────────────────────────────────────────────────────────────────┤
-│                                                                              │
-│  알려진 케이스:                                                               │
-│  - teammateMode: "tmux" → CLI 플래그 --teammate-mode 필요                     │
-│  - autoUpdatesChannel: "stable" → latest로 업데이트됨                         │
-│                                                                              │
-│  해결:                                                                        │
-│  1. claude doctor로 설정 검증                                                 │
-│  2. CLI 플래그 직접 사용                                                      │
-│  3. JSON 문법 오류 확인 (jq . settings.json)                                  │
-│                                                                              │
-└──────────────────────────────────────────────────────────────────────────────┘
-```
-
-### 10.4 Chat History Loss After Restart
-
-```
-┌──────────────────────────────────────────────────────────────────────────────┐
-│ BUG: PC 재시작 후 채팅 히스토리 손실                                          │
-├──────────────────────────────────────────────────────────────────────────────┤
-│                                                                              │
-│  증상:                                                                        │
-│  - /resume으로 20-40%만 복구됨                                                │
-│  - 세션 데이터 불완전                                                         │
-│                                                                              │
-│  예방:                                                                        │
-│  - 중요 작업 후 /compact로 요약                                               │
-│  - MEMORY.md에 핵심 내용 기록                                                 │
-│  - 주기적으로 커밋                                                            │
-│                                                                              │
-└──────────────────────────────────────────────────────────────────────────────┘
-```
-
-### 10.5 MCP Servers Mid-Session
-
-```
-┌──────────────────────────────────────────────────────────────────────────────┐
-│ BUG: /mcp로 활성화한 서버가 재시작 전까지 사용 불가                            │
-├──────────────────────────────────────────────────────────────────────────────┤
-│                                                                              │
-│  증상:                                                                        │
-│  - /mcp로 서버 활성화                                                         │
-│  - 도구가 사용 가능하지 않음                                                  │
-│  - Claude 재시작 후에야 작동                                                  │
-│                                                                              │
-│  해결:                                                                        │
-│  - MCP 서버 변경 후 Claude 재시작                                             │
-│  - 또는 미리 설정 파일에 추가                                                 │
-│                                                                              │
-└──────────────────────────────────────────────────────────────────────────────┘
-```
-
-### 10.6 Opus 4.6 Silent Failures
-
-```
-┌──────────────────────────────────────────────────────────────────────────────┐
-│ BUG: Opus 4.6 reports success without verifying outcomes                     │
-├──────────────────────────────────────────────────────────────────────────────┤
-│                                                                              │
-│  증상:                                                                        │
-│  - "완료했습니다" 보고 but 실제 실패                                          │
-│  - 검증 없이 성공 선언                                                        │
-│                                                                              │
-│  예방:                                                                        │
-│  - /effort high 사용                                                         │
-│  - 검증 단계 명시적 요청                                                      │
-│  - "100% 완료" 주장 신뢰하지 않기                                             │
-│                                                                              │
-└──────────────────────────────────────────────────────────────────────────────┘
-```
-
----
-
-## 11. Configuration Files (공식 경로)
-
-> **Source:** https://code.claude.com/docs/en/troubleshooting
-
-| File | Purpose |
-|------|---------|
-| `~/.claude/settings.json` | User settings (permissions, hooks, model) |
-| `.claude/settings.json` | Project settings (source control) |
-| `.claude/settings.local.json` | Local project settings (not committed) |
-| `~/.claude.json` | Global state (theme, OAuth, MCP servers) |
-| `.mcp.json` | Project MCP servers (source control) |
-
-**Managed file locations:**
-- macOS: `/Library/Application Support/ClaudeCode/`
-- Linux/WSL: `/etc/claude-code/`
-- Windows: `C:\Program Files\ClaudeCode\`
-
----
-
-## 12. 자주 무시되는 문제들
-
-### 12.1 WSL 느린 검색
-
-```
-증상: 검색 결과가 예상보다 적음 (완전 실패는 아님)
-원인: 크로스 파일시스템 디스크 성능 패널티
-해결:
-  1. 더 구체적인 검색 쿼리 사용
-  2. 프로젝트를 Linux 파일시스템(/home/)으로 이동
-  3. WSL 대신 네이티브 Windows 사용
-```
-
-### 12.2 /doctor OK인데 실제 문제
-
-```
-/doctor는 "OK" 표시하지만:
-- WSL 검색 성능 문제는 감지 안 됨
-- MCP 서버 instructions 무시는 감지 안 됨
-- Settings 일부 무시는 감지 안 됨
-
-→ /doctor만 믿지 말고 실제 동작 테스트
-```
+**Best Practices:**
+- Be explicit: "properly formatted markdown with language-tagged code blocks"
+- Document style in `CLAUDE.md`
+- Set up validation hooks
 
 ---
 
@@ -941,8 +887,6 @@ rm -rf ~/.config/claude-code/auth.json
 |----------|-------------|
 | [OpenCode Errors](./opencode-errors.md) | OpenCode/Crush CLI errors |
 | [Oh My OpenCode Errors](./oh-my-opencode-errors.md) | Plugin errors |
-| [OpenClaw Errors](./openclaw-errors.md) | Gateway/Telegram errors |
-| [Context Window](./context-window-ultimate.md) | Memory management |
 | [Obsidian Errors](./obsidian-errors.md) | PKM integration |
 
 ---
@@ -951,12 +895,9 @@ rm -rf ~/.config/claude-code/auth.json
 
 | Version | Date | Changes |
 |---------|------|---------|
-| 3.1 | 2026-02-07 | Add GitHub issues, config paths, ignored problems |
 | 3.0 | 2026-02-07 | Initial comprehensive guide from official docs |
 
 ---
 
-*Last updated: 2026-02-07*
-*Source: https://code.claude.com/docs/en/troubleshooting*
-*GitHub: https://github.com/anthropics/claude-code/issues*
+*Last updated: 2026-02-07 | Source: docs.anthropic.com/en/docs/claude-code*
 *Maintainer: claude-error-prevention | License: MIT*

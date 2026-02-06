@@ -210,6 +210,206 @@ export CRUSH_DISABLE_METRICS=1
   
   "permissions": {
     "allowed_tools": ["view", "ls", "grep", "edit"]
+  },
+  
+  "options": {
+    "debug": false,
+    "debug_lsp": false,
+    "disable_metrics": false,
+    "disable_provider_auto_update": false,
+    "attribution": {
+      "trailer_style": "assisted-by",
+      "generated_with": true
+    }
+  }
+}
+```
+
+### Crush Advanced Configuration
+
+**.crushignore (like .gitignore):**
+```
+# Ignore large directories
+node_modules/
+.git/
+dist/
+build/
+```
+
+**Agent Skills:**
+```bash
+# Skills directory (Unix)
+~/.config/crush/skills/
+
+# Windows
+%LOCALAPPDATA%\crush\skills\
+
+# Configure additional paths
+{
+  "options": {
+    "skills_paths": ["~/.config/crush/skills", "./project-skills"]
+  }
+}
+
+# Get example skills
+mkdir -p ~/.config/crush/skills
+cd ~/.config/crush/skills
+git clone https://github.com/anthropics/skills.git _temp
+mv _temp/skills/* . && rm -rf _temp
+```
+
+**Attribution Settings:**
+```json
+{
+  "options": {
+    "attribution": {
+      "trailer_style": "assisted-by",  // or "co-authored-by" or "none"
+      "generated_with": true           // adds "💘 Generated with Crush"
+    }
+  }
+}
+```
+
+**Logging:**
+```bash
+# View logs
+crush logs                 # Last 1000 lines
+crush logs --tail 500      # Last 500 lines
+crush logs --follow        # Real-time
+
+# Logs location: ./.crush/logs/crush.log
+```
+
+**Disable Metrics:**
+```bash
+export CRUSH_DISABLE_METRICS=1
+# or
+export DO_NOT_TRACK=1
+```
+
+Or in config:
+```json
+{
+  "options": {
+    "disable_metrics": true
+  }
+}
+```
+
+**Disable Provider Auto-Updates:**
+```bash
+export CRUSH_DISABLE_PROVIDER_AUTO_UPDATE=1
+```
+
+Or in config:
+```json
+{
+  "options": {
+    "disable_provider_auto_update": true
+  }
+}
+```
+
+**Manual Provider Update:**
+```bash
+crush update-providers                           # From Catwalk
+crush update-providers https://custom.url/       # Custom URL
+crush update-providers /path/to/providers.json   # Local file
+crush update-providers embedded                  # Reset to built-in
+```
+
+---
+
+### Local Models (Crush)
+
+**Ollama:**
+```json
+{
+  "providers": {
+    "ollama": {
+      "name": "Ollama",
+      "base_url": "http://localhost:11434/v1/",
+      "type": "openai-compat",
+      "models": [
+        {
+          "name": "Qwen 3 30B",
+          "id": "qwen3:30b",
+          "context_window": 256000,
+          "default_max_tokens": 20000
+        }
+      ]
+    }
+  }
+}
+```
+
+**LM Studio:**
+```json
+{
+  "providers": {
+    "lmstudio": {
+      "name": "LM Studio",
+      "base_url": "http://localhost:1234/v1/",
+      "type": "openai-compat",
+      "models": [
+        {
+          "name": "Qwen 3 30B",
+          "id": "qwen/qwen3-30b-a3b-2507",
+          "context_window": 256000,
+          "default_max_tokens": 20000
+        }
+      ]
+    }
+  }
+}
+```
+
+---
+
+### Cloud Providers (Crush)
+
+**Amazon Bedrock:**
+```bash
+# Configure AWS
+aws configure
+
+# Set region
+export AWS_REGION=us-east-1
+# or
+export AWS_DEFAULT_REGION=us-east-1
+
+# Or use profile
+export AWS_PROFILE=myprofile
+
+# Or use bearer token
+export AWS_BEARER_TOKEN_BEDROCK=...
+```
+
+**Google Vertex AI:**
+```bash
+# Set project and location
+export VERTEXAI_PROJECT=my-project
+export VERTEXAI_LOCATION=us-central1
+
+# Authenticate
+gcloud auth application-default login
+```
+
+Config:
+```json
+{
+  "providers": {
+    "vertexai": {
+      "models": [
+        {
+          "id": "claude-sonnet-4@20250514",
+          "name": "VertexAI Sonnet 4",
+          "cost_per_1m_in": 3,
+          "cost_per_1m_out": 15,
+          "context_window": 200000
+        }
+      ]
+    }
   }
 }
 ```
