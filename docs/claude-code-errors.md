@@ -768,14 +768,182 @@ rm -rf ~/.config/claude-code/auth.json
 
 ---
 
+## 10. GitHub Issues (실제 버그 - 2026-02-07)
+
+> 공식 GitHub에서 수집한 실제 버그 패턴
+
+### 10.1 Context Deadlock
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ BUG: Deadlock - context limit reached but /compact and rewind both fail      │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  증상:                                                                        │
+│  - Context 한계 도달                                                          │
+│  - /compact 실행 → "Conversation too long" 에러                              │
+│  - rewind 실행 → 동일 에러                                                    │
+│  - 완전히 막힘                                                                │
+│                                                                              │
+│  해결:                                                                        │
+│  1. 새 세션 시작 (/new 또는 claude 재실행)                                    │
+│  2. 50% context에서 미리 /compact                                             │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+**Source:** [GitHub Issue](https://github.com/anthropics/claude-code/issues)
+
+### 10.2 MCP Server Instructions Not Passed
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ BUG: MCP server instructions from initialize response are not passed         │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  증상:                                                                        │
+│  - MCP 서버의 instructions가 모델에 전달 안됨                                  │
+│  - MCP 서버 특정 동작이 무시됨                                                │
+│                                                                              │
+│  해결:                                                                        │
+│  - CLAUDE.md에 MCP 사용법 명시적으로 기재                                     │
+│  - 프롬프트에서 직접 MCP 도구 사용 지시                                       │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+### 10.3 Settings Ignored
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ BUG: settings.json 설정이 무시됨                                              │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  알려진 케이스:                                                               │
+│  - teammateMode: "tmux" → CLI 플래그 --teammate-mode 필요                     │
+│  - autoUpdatesChannel: "stable" → latest로 업데이트됨                         │
+│                                                                              │
+│  해결:                                                                        │
+│  1. claude doctor로 설정 검증                                                 │
+│  2. CLI 플래그 직접 사용                                                      │
+│  3. JSON 문법 오류 확인 (jq . settings.json)                                  │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+### 10.4 Chat History Loss After Restart
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ BUG: PC 재시작 후 채팅 히스토리 손실                                          │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  증상:                                                                        │
+│  - /resume으로 20-40%만 복구됨                                                │
+│  - 세션 데이터 불완전                                                         │
+│                                                                              │
+│  예방:                                                                        │
+│  - 중요 작업 후 /compact로 요약                                               │
+│  - MEMORY.md에 핵심 내용 기록                                                 │
+│  - 주기적으로 커밋                                                            │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+### 10.5 MCP Servers Mid-Session
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ BUG: /mcp로 활성화한 서버가 재시작 전까지 사용 불가                            │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  증상:                                                                        │
+│  - /mcp로 서버 활성화                                                         │
+│  - 도구가 사용 가능하지 않음                                                  │
+│  - Claude 재시작 후에야 작동                                                  │
+│                                                                              │
+│  해결:                                                                        │
+│  - MCP 서버 변경 후 Claude 재시작                                             │
+│  - 또는 미리 설정 파일에 추가                                                 │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+### 10.6 Opus 4.6 Silent Failures
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ BUG: Opus 4.6 reports success without verifying outcomes                     │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  증상:                                                                        │
+│  - "완료했습니다" 보고 but 실제 실패                                          │
+│  - 검증 없이 성공 선언                                                        │
+│                                                                              │
+│  예방:                                                                        │
+│  - /effort high 사용                                                         │
+│  - 검증 단계 명시적 요청                                                      │
+│  - "100% 완료" 주장 신뢰하지 않기                                             │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 11. Configuration Files (공식 경로)
+
+> **Source:** https://code.claude.com/docs/en/troubleshooting
+
+| File | Purpose |
+|------|---------|
+| `~/.claude/settings.json` | User settings (permissions, hooks, model) |
+| `.claude/settings.json` | Project settings (source control) |
+| `.claude/settings.local.json` | Local project settings (not committed) |
+| `~/.claude.json` | Global state (theme, OAuth, MCP servers) |
+| `.mcp.json` | Project MCP servers (source control) |
+
+**Managed file locations:**
+- macOS: `/Library/Application Support/ClaudeCode/`
+- Linux/WSL: `/etc/claude-code/`
+- Windows: `C:\Program Files\ClaudeCode\`
+
+---
+
+## 12. 자주 무시되는 문제들
+
+### 12.1 WSL 느린 검색
+
+```
+증상: 검색 결과가 예상보다 적음 (완전 실패는 아님)
+원인: 크로스 파일시스템 디스크 성능 패널티
+해결:
+  1. 더 구체적인 검색 쿼리 사용
+  2. 프로젝트를 Linux 파일시스템(/home/)으로 이동
+  3. WSL 대신 네이티브 Windows 사용
+```
+
+### 12.2 /doctor OK인데 실제 문제
+
+```
+/doctor는 "OK" 표시하지만:
+- WSL 검색 성능 문제는 감지 안 됨
+- MCP 서버 instructions 무시는 감지 안 됨
+- Settings 일부 무시는 감지 안 됨
+
+→ /doctor만 믿지 말고 실제 동작 테스트
+```
+
+---
+
 ## Related Documentation
 
 | Document | Description |
 |----------|-------------|
 | [OpenCode Errors](./opencode-errors.md) | OpenCode/Crush CLI errors |
 | [Oh My OpenCode Errors](./oh-my-opencode-errors.md) | Plugin errors |
+| [OpenClaw Errors](./openclaw-errors.md) | Gateway/Telegram errors |
+| [Context Window](./context-window-ultimate.md) | Memory management |
 | [Obsidian Errors](./obsidian-errors.md) | PKM integration |
-| [Ghostty Errors](./ghostty-errors.md) | Terminal emulator |
 
 ---
 
@@ -783,9 +951,12 @@ rm -rf ~/.config/claude-code/auth.json
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 3.1 | 2026-02-07 | Add GitHub issues, config paths, ignored problems |
 | 3.0 | 2026-02-07 | Initial comprehensive guide from official docs |
 
 ---
 
-*Last updated: 2026-02-07 | Source: docs.anthropic.com/en/docs/claude-code*
+*Last updated: 2026-02-07*
+*Source: https://code.claude.com/docs/en/troubleshooting*
+*GitHub: https://github.com/anthropics/claude-code/issues*
 *Maintainer: claude-error-prevention | License: MIT*
