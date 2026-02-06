@@ -1,0 +1,29 @@
+name: Daily Pattern Check
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  # Every day at midnight UTC
+  workflow_dispatch:  # Manual trigger
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install jq
+        run: sudo apt-get install -y jq
+
+      - name: Validate patterns JSON
+        run: jq empty patterns/error-patterns.json
+
+      - name: Count patterns
+        run: |
+          count=$(jq '.patterns | length' patterns/error-patterns.json)
+          echo "Total patterns: $count"
+
+      - name: List patterns
+        run: ./src/error-engine.sh list
+
+      - name: Run scan (dry-run)
+        run: ./src/error-engine.sh verify || true
