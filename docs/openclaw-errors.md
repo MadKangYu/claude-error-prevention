@@ -1,156 +1,286 @@
 # OpenClaw Error Patterns
 
-## System Overview
+**Version:** 2026.2.3+
+
+---
+
+## Quick Reference
 
 | Component | Location/Port |
 |-----------|---------------|
 | Gateway | `localhost:18789` |
 | Config | `~/.openclaw/openclaw.json` |
-| Cron | `~/.openclaw/cron/jobs.json` |
-| Version | 2026.2.3-1 |
+| Auth | `~/.openclaw/agents/main/agent/auth-profiles.json` |
+| Logs | `openclaw logs --follow` |
 
-## Configuration
+---
 
-### Config File Location
+## Common Errors
+
+### 1. Unknown Model
 
 ```
-~/.openclaw/
-├── openclaw.json       # 메인 설정
-├── cron/
-│   └── jobs.json       # 크론 작업
-└── docker-compose.browserless.yml
+⚠️ Agent failed before reply: Unknown model: anthropic/claude-opus-4-6
 ```
 
-### Common Config Errors
+**Cause:** Model ID typo or model not configured
 
-| Mistake | Problem | Fix |
-|---------|---------|-----|
-| Claude Code 경로 사용 | `~/.claude/` 에 설정 | `~/.openclaw/` 사용 |
-| Gateway 포트 충돌 | 18789 사용 중 | 포트 변경 또는 프로세스 종료 |
-| Auth profile 누락 | Provider 인증 실패 | `openclaw.json` auth 섹션 확인 |
+**Available Models:**
+```
+anthropic/claude-opus-4-5
+anthropic/claude-sonnet-4-5
+anthropic/claude-haiku-4-5
+openai/gpt-5.2
+github-copilot/gpt-5.2-codex
+google-antigravity/claude-sonnet-4-5
+```
 
-## Agents
-
-### Agent Configuration
-
-| ID | Model | Telegram |
-|----|-------|----------|
-| main | haiku | @Mad_Yu_Bot |
-| study | sonnet | @Study_Yu_Bot |
-| madstamp | sonnet | @MadstampCEO_Bot |
-| github | haiku | @GitBub_Yu_Bot |
-| opencode | sonnet | @oh_my_opencode_bot |
-| openclaw-learn | haiku | @OpenClaw8723Bot |
-
-### Agent Errors
-
-| Error | Cause | Fix |
-|-------|-------|-----|
-| Agent not responding | Gateway down | `launchctl start openclaw.gateway` |
-| Wrong model used | Config 오류 | `openclaw.json` models 섹션 확인 |
-| Telegram 연결 실패 | Token 만료 | @BotFather에서 토큰 재발급 |
-
-## Services
-
-### Service Status Check
-
+**Fix:**
 ```bash
-# Gateway
+# Check available models
+openclaw models
+
+# Update config
+openclaw config set defaultModel anthropic/claude-opus-4-5
+```
+
+---
+
+### 2. Gateway Not Responding
+
+```
+curl: (7) Failed to connect to localhost port 18789: Connection refused
+```
+
+**Fix:**
+```bash
+# Check status
+openclaw gateway status
+
+# Start gateway
+launchctl start openclaw.gateway
+
+# Or restart
+openclaw gateway restart
+```
+
+---
+
+### 3. Telegram Bot No Response
+
+```
+[OpenClaw] Telegram webhook timeout
+Error: Bot did not respond within 30s
+```
+
+**Causes:**
+- Gateway down
+- Bot token expired
+- Webhook misconfigured
+
+**Fix:**
+```bash
+# Check gateway
 curl -s http://localhost:18789/health
 
-# Browserless
-curl -s http://localhost:3000/health
+# Verify bot token
+openclaw agents list
 
-# CouchDB
-curl -s http://localhost:5984/
+# Regenerate token at @BotFather if needed
 ```
 
-### Common Service Errors
+---
 
-| Service | Port | Error | Fix |
-|---------|------|-------|-----|
-| Gateway | 18789 | Connection refused | launchd 확인 |
-| Browserless | 3000 | Container not running | `docker compose up -d` |
-| CouchDB | 5984 | Auth failed | credentials 확인 |
+### 4. OAuth Token Expired
 
-## Security
-
-### Security Settings
-
-| Setting | Value | Description |
-|---------|-------|-------------|
-| Sandbox | `non-main` | 메인 외 에이전트 샌드박스 |
-| mDNS | minimal | 최소 노출 |
-| Logging | redact | 민감정보 삭제 |
-| Policy | allowlist | dm/group 허용 목록 |
-
-### Security Errors
-
-| Error | Cause | Fix |
-|-------|-------|-----|
-| .env 노출 | Git에 커밋됨 | .gitignore 추가, 토큰 교체 |
-| Token leak | 히스토리에 남음 | BFG Repo-Cleaner로 제거 |
-| Unauthorized access | allowlist 미설정 | policy 설정 |
-
-## Provider Authentication
-
-### Auth Profiles
-
-```json
-{
-  "auth": {
-    "profiles": {
-      "anthropic:oauth": { "provider": "anthropic", "mode": "oauth" },
-      "openai:oauth": { "provider": "openai", "mode": "oauth" },
-      "google-antigravity:email": { "provider": "google-antigravity", "mode": "oauth" }
-    }
-  }
-}
+```
+Error: 401 Unauthorized
+Provider: anthropic
 ```
 
-### Auth Errors
+**Fix:**
+```bash
+# Re-authenticate
+openclaw configure
 
-| Error | Cause | Fix |
-|-------|-------|-----|
-| OAuth expired | 토큰 만료 | 재인증 |
-| Provider not found | Profile 없음 | auth.profiles에 추가 |
-| Rate limit | 사용량 초과 | 다른 provider fallback |
+# Or specific provider
+openclaw auth login anthropic
+```
+
+---
+
+### 5. Rate Limit Exceeded
+
+```
+Error: 429 Too Many Requests
+```
+
+**Fix:**
+- Wait for rate limit reset
+- Use fallback model:
+```bash
+openclaw config set fallbackModels '["openai/gpt-5.2", "anthropic/claude-haiku-4-5"]'
+```
+
+---
+
+### 6. Context Window Exceeded
+
+```
+Error: Context window exceeded (200K tokens)
+```
+
+**Fix:**
+- Use `/compact` in chat
+- Switch to model with larger context
+- Start new conversation
+
+---
 
 ## Model Configuration
+
+### Check Current Config
+```bash
+openclaw models
+```
+
+**Output:**
+```
+Default       : anthropic/claude-haiku-4-5
+Fallbacks (2) : anthropic/claude-sonnet-4-5, anthropic/claude-opus-4-5
+Aliases (9)   : opus -> anthropic/claude-opus-4-5, ...
+```
 
 ### Model Aliases
 
 | Alias | Model ID |
 |-------|----------|
-| opus46 | claude-opus-4-6-20260205 |
-| sonnet | claude-sonnet-4-5-20250929 |
-| haiku | claude-haiku-4-5-20251001 |
+| opus | anthropic/claude-opus-4-5 |
+| sonnet | anthropic/claude-sonnet-4-5 |
+| haiku | anthropic/claude-haiku-4-5 |
+| gpt | openai/gpt-5.2 |
+| codex | github-copilot/gpt-5.2-codex |
+| free | ollama/llama3.2:3b |
 
-### Model Errors
+### Set Model
+```bash
+# Set default
+openclaw config set defaultModel anthropic/claude-opus-4-5
+
+# Set fallbacks
+openclaw config set fallbackModels '["anthropic/claude-sonnet-4-5"]'
+
+# Add alias
+openclaw config set 'models.aliases.mymodel' 'anthropic/claude-opus-4-5'
+```
+
+---
+
+## Agent Configuration
+
+### List Agents
+```bash
+openclaw agents list
+```
+
+### Agent Structure
+```
+~/.openclaw/agents/
+├── main/           # Default agent
+│   └── agent/
+│       ├── auth-profiles.json
+│       └── models.json
+├── study/
+└── ...
+```
+
+### Agent Errors
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| Model not found | Alias 오타 | 정확한 ID 사용 |
-| Context exceeded | 토큰 초과 | 작은 모델 또는 /compact |
-| Fallback failed | 모든 provider 실패 | 최소 하나 인증 확인 |
+| Agent not found | Wrong agent name | `openclaw agents list` |
+| Auth failed | Profile missing | `openclaw auth login <provider>` |
+| Model unavailable | Not configured | Add to models.json |
+
+---
+
+## Services
+
+### Health Checks
+```bash
+# Gateway
+curl -s http://localhost:18789/health | jq
+
+# Browserless (if configured)
+curl -s http://localhost:3000
+
+# All services
+openclaw doctor
+```
+
+### Service Errors
+
+| Service | Port | Error | Fix |
+|---------|------|-------|-----|
+| Gateway | 18789 | Connection refused | `launchctl start openclaw.gateway` |
+| Browserless | 3000 | Not running | `docker compose -f ~/.openclaw/docker-compose.browserless.yml up -d` |
+
+---
+
+## Security
+
+### Sensitive Files
+```
+~/.openclaw/openclaw.json          # May contain tokens
+~/.openclaw/agents/*/auth-profiles.json  # OAuth tokens
+```
+
+### Security Errors
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| .env exposed | Committed to git | Add to .gitignore, rotate tokens |
+| Token in logs | Logging not redacted | Set `logging.redact: true` |
+
+---
 
 ## Verification
 
 ```bash
-# Config 검증
+# Full health check
+openclaw doctor
+
+# Config validation
 cat ~/.openclaw/openclaw.json | jq '.meta.lastTouchedVersion'
 
-# Gateway 상태
-curl -s http://localhost:18789/health
+# Provider auth status
+openclaw models  # Shows auth overview
 
-# Services 상태
-docker ps | grep -E "(browserless|couchdb)"
-
-# Agent 목록
-cat ~/.openclaw/openclaw.json | jq '.agents | keys'
+# Logs
+openclaw logs --follow
 ```
 
-## Pending Actions (from MEMORY.md)
+---
 
-- [ ] Telegram Bot Token rotation (@BotFather) - madstamp-bot .env 노출됨
-- [ ] Optional: BFG Repo-Cleaner로 .env git 히스토리 제거
+## Troubleshooting Flowchart
+
+```
+Error occurs
+    │
+    ▼
+┌─────────────────┐
+│ Check logs      │
+│ openclaw logs   │
+└────────┬────────┘
+         │
+    ┌────┴────┐
+    ▼         ▼
+┌───────┐ ┌───────┐
+│ Model │ │ Auth  │
+│ Error │ │ Error │
+└───┬───┘ └───┬───┘
+    │         │
+    ▼         ▼
+openclaw   openclaw
+models     auth login
+```

@@ -1475,6 +1475,28 @@
         "command": "bunx oh-my-opencode install",
         "description": "Run installer to add plugin"
       }
+    },
+    {
+      "id": "openclaw-unknown-model",
+      "tool": "openclaw",
+      "category": "config",
+      "keywords": [
+        "Unknown model",
+        "model",
+        "anthropic",
+        "claude-opus",
+        "provider"
+      ],
+      "detect": {
+        "type": "log-pattern",
+        "pattern": "Unknown model.*anthropic|model.*not found"
+      },
+      "message": "Unknown model ID in OpenClaw config",
+      "severity": "error",
+      "fix": {
+        "manual": true,
+        "description": "Model ID typo. Available: anthropic/claude-opus-4-5, anthropic/claude-sonnet-4-5, anthropic/claude-haiku-4-5. Check with: openclaw models"
+      }
     }
   ]
 }

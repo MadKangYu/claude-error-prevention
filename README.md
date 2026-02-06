@@ -1,39 +1,62 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/patterns-62-blue?style=for-the-badge" alt="Patterns">
-  <img src="https://img.shields.io/badge/auto--fix-40+-green?style=for-the-badge" alt="Auto-fix">
-  <img src="https://img.shields.io/badge/version-2.4-orange?style=for-the-badge" alt="Version">
+  <img src="https://img.shields.io/badge/patterns-67-blue?style=for-the-badge" alt="Patterns">
+  <img src="https://img.shields.io/badge/auto--fix-45+-green?style=for-the-badge" alt="Auto-fix">
+  <img src="https://img.shields.io/badge/version-2.6-orange?style=for-the-badge" alt="Version">
 </p>
 
-# AI Agent Error Prevention
+<h1 align="center">AI Agent Error Prevention</h1>
 
-> Systematic error detection, diagnosis, and auto-resolution for AI coding agents.
+<p align="center">
+  <strong>Systematic error detection, diagnosis, and auto-resolution for AI coding agents.</strong>
+</p>
 
-```bash
-git clone https://github.com/MadKangYu/claude-error-prevention.git
-./claude-error-prevention/src/error-engine.sh heal
 ```
-
----
-
-## Why This Exists
-
-AI coding agents fail silently. Duplicate installations, wrong config paths, deprecated packages, invalid JSON—these issues waste hours. This tool finds and fixes them automatically.
+┌─────────────────────────────────────────────────────────────┐
+│  $ ./error-engine.sh heal                                   │
+│                                                             │
+│  [OK] Scope: claude-code (v2.1.34)                          │
+│  [OK] Scope: crush (v1.2.0)                                 │
+│  [OK] Scope: obsidian                                       │
+│                                                             │
+│  Scanning 67 patterns...                                    │
+│                                                             │
+│  [FIX] claude-duplicate-install → removed npm version       │
+│  [FIX] claude-settings-schema → added $schema               │
+│  [OK] opencode-uint64-schema → safe to ignore               │
+│                                                             │
+│  ╔══════════════════════════════════════════════════════╗   │
+│  ║  HEAL COMPLETE                                       ║   │
+│  ║  Fixed: 2  |  Manual: 0  |  Healthy: 65              ║   │
+│  ╚══════════════════════════════════════════════════════╝   │
+└─────────────────────────────────────────────────────────────┘
+```
 
 ---
 
 ## Quick Start
 
 ```bash
-# One command does everything
+git clone https://github.com/MadKangYu/claude-error-prevention.git
+cd claude-error-prevention
 ./src/error-engine.sh heal
 ```
 
-**What `heal` does:**
-1. Detects your environment (Claude, Crush, OpenClaw, etc.)
-2. Initializes missing configs
-3. Scans for 62 known error patterns
-4. Auto-fixes what it can
-5. Reports what needs manual attention
+---
+
+## How It Works
+
+```
+┌──────────┐     ┌──────────┐     ┌──────────┐     ┌──────────┐
+│  DETECT  │ ──▶ │   SCAN   │ ──▶ │   FIX    │ ──▶ │  VERIFY  │
+│  Scope   │     │ Patterns │     │  Auto    │     │  State   │
+└──────────┘     └──────────┘     └──────────┘     └──────────┘
+     │                │                │                │
+     ▼                ▼                ▼                ▼
+  Claude           67 known        Backup +         Confirm
+  Crush            error           Apply fix        success
+  OpenClaw         patterns        or report        or rollback
+  Obsidian                         manual
+```
 
 ---
 
@@ -41,45 +64,70 @@ AI coding agents fail silently. Duplicate installations, wrong config paths, dep
 
 | Command | Description |
 |---------|-------------|
-| `heal` | Full auto: detect → init → fix → verify |
+| `heal` | **Full auto:** detect → init → fix → verify |
 | `scan` | Find all errors |
 | `search <keyword>` | Find specific error |
 | `fix <id>` | Fix one error |
 | `fix-all` | Fix all auto-fixable |
 | `scope` | Show detected tools |
 | `doctor` | Run health checks |
-| `list` | List all patterns |
+| `list` | List all 67 patterns |
 
 ---
 
 ## Supported Tools
 
-| Tool | Patterns | Auto-Fix |
-|------|----------|----------|
-| Claude Code | 10 | 8 |
-| Crush (OpenCode) | 5 | 3 |
-| OpenClaw + Telegram | 6 | 3 |
-| Obsidian + QMD | 4 | 2 |
-| System (npm, git, ssh) | 20 | 15 |
-| Server/Network | 8 | 2 |
-| Quota/Limits | 5 | 1 |
-| Korean Errors | 4 | 0 |
+```
+┌─────────────────────────────────────────────────────────────┐
+│  SUPPORTED TOOLS                                            │
+├─────────────────┬──────────┬────────────────────────────────┤
+│  Claude Code    │ 10 patterns │ ████████████████████ 80%    │
+│  Crush/OpenCode │  5 patterns │ ██████████████████   60%    │
+│  OpenClaw       │  6 patterns │ ██████████           50%    │
+│  Obsidian/QMD   │  4 patterns │ ██████████           50%    │
+│  Oh My OpenCode │  5 patterns │ ████████████████     80%    │
+│  System         │ 20 patterns │ ██████████████████   75%    │
+│  Korean Errors  │  4 patterns │ ████                  0%    │
+└─────────────────┴──────────┴────────────────────────────────┘
+                               └── Auto-fix percentage
+```
 
 ---
 
-## Pattern Categories
+## Error Resolution Flow
 
 ```
-claude-*          Installation, config, MCP, JSON
-opencode-*        Migration to Crush, providers
-openclaw-*        Gateway, Telegram bots, security
-obsidian-*        Vault, QMD indexing, sync
-server-*          Connection, timeout, SSL
-quota-*           Rate limits, context, daily
-install-*         Permissions, dependencies
-patch-*           Git conflicts, uncommitted
-beginner-*        sudo npm, .env in git
-korean-*          Ambiguous commands, implicit intent
+     ┌─────────────────┐
+     │  Error Detected │
+     └────────┬────────┘
+              ▼
+     ┌─────────────────┐
+     │  Pattern Match  │
+     └────────┬────────┘
+              ▼
+        ┌─────┴─────┐
+        ▼           ▼
+   ┌────────┐  ┌────────┐
+   │  Auto  │  │ Manual │
+   │  Fix   │  │ Steps  │
+   └───┬────┘  └────────┘
+       ▼
+   ┌────────┐
+   │ Backup │
+   └───┬────┘
+       ▼
+   ┌────────┐
+   │ Apply  │
+   └───┬────┘
+       ▼
+   ┌────────┐     ┌────────┐
+   │ Verify │────▶│  Done  │
+   └───┬────┘     └────────┘
+       │ Fail
+       ▼
+   ┌────────┐
+   │Rollback│
+   └────────┘
 ```
 
 ---
@@ -88,42 +136,147 @@ korean-*          Ambiguous commands, implicit intent
 
 ### Search for errors
 ```bash
-./error-engine.sh search "mcp"
-./error-engine.sh search "duplicate"
-./error-engine.sh search "quota"
+$ ./error-engine.sh search "mcp"
+
+[INFO] Searching for: mcp
+
+[claude-code] mcp-server-crash
+  Message: MCP server crashed or failed to start
+  Fix: Check MCP config, verify command path exists
+
+[claude-code] mcp-invalid-response  
+  Message: MCP server returned invalid response
+  Fix: Check MCP server logs, verify JSON output
+
+[OK] Found 2 match(es)
 ```
 
-### Check specific scope
+### Check scope
 ```bash
-./error-engine.sh scope claude
-./error-engine.sh scope openclaw
+$ ./error-engine.sh scope
+
+[INFO] Detecting scope...
+
+[OK] Scope: global
+[OK] Scope: claude-code (v2.1.34)
+[OK] Scope: crush (v1.2.0)
+[OK] Scope: obsidian
+[OK] Scope: iTerm2
+[OK] Scope: Ghostty
+
+Detected scopes: global claude crush obsidian iterm2 ghostty
 ```
 
-### Fix specific error
-```bash
-./error-engine.sh fix claude-duplicate-install
+---
+
+## Pattern Categories
+
+```
+claude-*          ──▶  Installation, config, MCP, JSON
+opencode-*        ──▶  Migration to Crush, providers  
+openclaw-*        ──▶  Gateway, Telegram bots, security
+obsidian-*        ──▶  Vault, QMD indexing, sync
+oh-my-opencode-*  ──▶  Plugin, agents, Ollama
+server-*          ──▶  Connection, timeout, SSL
+quota-*           ──▶  Rate limits, context, daily
+install-*         ──▶  Permissions, dependencies
+patch-*           ──▶  Git conflicts, uncommitted
+beginner-*        ──▶  sudo npm, .env in git
+korean-*          ──▶  Ambiguous commands, implicit intent
 ```
 
 ---
 
 ## Korean User Support
 
-Common Korean commands that cause errors:
+Common commands that cause errors:
 
-| Korean | Risk | Meaning |
-|--------|------|---------|
-| 정리해 | ⚠️ | Delete or organize? |
-| 지워 | 🔴 | Which file? Confirm first |
-| 다 바꿔 | 🔴 | Scope unclear |
-| 안돼 | ℹ️ | Expects full fix, not diagnosis |
+| Korean | Risk | Real Intent | AI Should |
+|--------|------|-------------|-----------|
+| 정리해 | ⚠️ HIGH | Organize OR Delete? | **ASK first** |
+| 지워 | 🔴 DANGER | Which file exactly? | **CONFIRM target** |
+| 다 바꿔 | 🔴 DANGER | Scope is unclear | **CLARIFY scope** |
+| 안돼 | ℹ️ INFO | Wants FULL fix | Fix + Test + Verify |
+| 확인해 | ℹ️ INFO | Wants action | Check + Fix if wrong |
 
-See [`docs/korean-errors.md`](docs/korean-errors.md) for full guide.
+📖 See [`docs/korean-errors.md`](docs/korean-errors.md) for full guide.
+
+---
+
+## Troubleshooting Flowchart
+
+```
+Start Here
+    │
+    ▼
+┌─────────────────────────────────────┐
+│ Run: ./error-engine.sh heal         │
+└──────────────────┬──────────────────┘
+                   ▼
+         ┌─────────┴─────────┐
+         │ Everything fixed? │
+         └─────────┬─────────┘
+              YES  │  NO
+         ┌─────────┴─────────┐
+         ▼                   ▼
+    ┌────────┐     ┌──────────────────┐
+    │  Done  │     │ Check error type │
+    └────────┘     └────────┬─────────┘
+                            │
+         ┌──────────────────┼──────────────────┐
+         ▼                  ▼                  ▼
+   ┌──────────┐      ┌──────────┐      ┌──────────┐
+   │ JSON err │      │ MCP err  │      │ Quota    │
+   └────┬─────┘      └────┬─────┘      └────┬─────┘
+        │                 │                 │
+        ▼                 ▼                 ▼
+   Validate at       Check path        Wait or
+   jsonlint.com      in config         switch provider
+```
+
+---
+
+## File Structure
+
+```
+claude-error-prevention/
+├── src/
+│   └── error-engine.sh       # Main engine (900+ lines)
+├── lib/
+│   ├── utils.sh              # Shared utilities
+│   └── scope.sh              # Scope detection
+├── patterns/
+│   └── error-patterns.json   # 67 patterns
+├── docs/
+│   ├── error-examples.md     # Real error messages
+│   ├── korean-errors.md      # Korean-specific guide
+│   ├── glossary.md           # Korean→English (380+ terms)
+│   ├── opencode-errors.md    # Crush migration guide
+│   └── oh-my-opencode-errors.md
+├── scripts/
+│   └── daily-update.sh       # Auto-update cron
+├── .github/workflows/
+│   ├── daily-check.yml       # Daily verification
+│   └── npm-publish.yml       # npm publishing
+├── package.json              # npm package config
+└── README.md
+```
+
+---
+
+## Requirements
+
+| Dependency | Required | Install |
+|------------|----------|---------|
+| `bash` | 3.2+ | Pre-installed |
+| `jq` | Latest | `brew install jq` |
+| `curl` | Any | Pre-installed |
 
 ---
 
 ## Auto-Update
 
-### Local (cron)
+### Cron (Local)
 ```bash
 crontab -e
 # Add:
@@ -135,44 +288,16 @@ Runs daily at midnight UTC. See `.github/workflows/daily-check.yml`.
 
 ---
 
-## File Structure
-
-```
-├── src/error-engine.sh       # Main engine
-├── patterns/
-│   └── error-patterns.json   # 62 patterns
-├── docs/
-│   ├── installation.md       # Official install guides
-│   ├── glossary.md           # Korean→English terms
-│   ├── korean-errors.md      # Korean-specific errors
-│   └── scope-guide.md        # Universal vs personal
-└── scripts/
-    └── daily-update.sh       # Cron script
-```
-
----
-
-## Requirements
-
-- `bash` 3.2+
-- `jq` (JSON processor)
-- `curl`
-
-```bash
-brew install jq  # macOS
-apt install jq   # Linux
-```
-
----
-
 ## Sources
 
 All patterns verified against official documentation:
 
-- [Claude Code](https://github.com/anthropics/claude-code)
-- [Crush](https://github.com/charmbracelet/crush)
-- [QMD](https://github.com/tobi/qmd)
-- [Oh My OpenCode](https://github.com/code-yeongyu/oh-my-opencode)
+| Tool | Repository | Verified |
+|------|------------|----------|
+| Claude Code | [anthropics/claude-code](https://github.com/anthropics/claude-code) | ✅ 2026-02-07 |
+| Crush | [charmbracelet/crush](https://github.com/charmbracelet/crush) | ✅ 2026-02-07 |
+| Oh My OpenCode | [code-yeongyu/oh-my-opencode](https://github.com/code-yeongyu/oh-my-opencode) | ✅ 2026-02-07 |
+| QMD | [tobi/qmd](https://github.com/tobi/qmd) | ✅ 2026-02-07 |
 
 ---
 
@@ -183,5 +308,9 @@ MIT
 ---
 
 <p align="center">
-  <strong>62 patterns · 40+ auto-fixes · Zero configuration</strong>
+  <strong>67 patterns · 45+ auto-fixes · Zero configuration</strong>
+</p>
+
+<p align="center">
+  <sub>Built with care by <a href="https://github.com/MadKangYu">MadKangYu</a></sub>
 </p>

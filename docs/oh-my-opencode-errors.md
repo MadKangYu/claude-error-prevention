@@ -1,140 +1,255 @@
 # Oh My OpenCode Error Patterns
 
-## Security Warning
+**Repository:** https://github.com/code-yeongyu/oh-my-opencode (branch: dev)  
+**Version:** 3.2.4+
 
-> **ohmyopencode.com is NOT affiliated with the official project.**
-> Official downloads: https://github.com/code-yeongyu/oh-my-opencode/releases
+> **WARNING:** ohmyopencode.com is NOT affiliated with the official project.
+> Only download from GitHub releases.
+
+---
 
 ## Installation
 
-### Official Methods
-
+### Quick Install
 ```bash
-# npm (recommended)
-npm install -g oh-my-opencode@latest
-
-# Or from releases
-https://github.com/code-yeongyu/oh-my-opencode/releases
+bunx oh-my-opencode install
 ```
 
-### Common Installation Errors
+### Non-Interactive (for CI/agents)
+```bash
+bunx oh-my-opencode install --no-tui \
+  --claude=max20 \
+  --openai=yes \
+  --gemini=no \
+  --copilot=no
+```
 
-| Error | Cause | Fix |
-|-------|-------|-----|
-| Impersonation site | ohmyopencode.com 사용 | GitHub releases에서만 다운로드 |
-| Old version | @latest 미사용 | `oh-my-opencode@latest` 명시 |
-| npm permission | sudo 사용 | sudo 없이 설치, nvm 사용 권장 |
+### Verify Installation
+```bash
+opencode --version  # Should be 1.0.150+
+cat ~/.config/opencode/opencode.json | jq '.plugin'  # Should include "oh-my-opencode"
+```
 
-## OAuth / Authentication
+### Uninstall
+```bash
+jq '.plugin = [.plugin[] | select(. != "oh-my-opencode")]' \
+    ~/.config/opencode/opencode.json > /tmp/oc.json && \
+    mv /tmp/oc.json ~/.config/opencode/opencode.json
+```
 
-### Claude OAuth 제한 (2026-01)
-
-> Anthropic has restricted third-party OAuth access citing ToS violations.
-
-| Status | Description |
-|--------|-------------|
-| Claude Code subscription | 기술적으로 가능하나 ToS 위반 가능성 |
-| Official OAuth | 차단됨 |
-| Custom OAuth spoofing | 권장하지 않음 |
-
-### Auth Errors
-
-| Error | Cause | Fix |
-|-------|-------|-----|
-| OAuth blocked | Anthropic 제한 | 다른 provider 사용 |
-| ToS violation warning | Claude Code OAuth 사용 | OpenAI/Google 등 대체 |
-| Token expired | OAuth 만료 | 재인증 |
+---
 
 ## Configuration
 
-### Config Locations
+### File Locations (Priority Order)
 
+| Priority | Path |
+|----------|------|
+| 1 | `.opencode/oh-my-opencode.json` (project) |
+| 2 | `~/.config/opencode/oh-my-opencode.json` (user) |
+
+**JSONC supported** (comments + trailing commas)
+
+### Schema Autocomplete
+```json
+{
+  "$schema": "https://raw.githubusercontent.com/code-yeongyu/oh-my-opencode/master/assets/oh-my-opencode.schema.json"
+}
 ```
-~/.config/opencode/        # OpenCode 기본
-./.opencode/               # 프로젝트별
-./AGENTS.md                # 에이전트 설정
+
+### Example Config
+```jsonc
+{
+  "$schema": "https://raw.githubusercontent.com/code-yeongyu/oh-my-opencode/master/assets/oh-my-opencode.schema.json",
+  
+  "agents": {
+    "oracle": { "model": "openai/gpt-5.2" },
+    "explore": { "model": "anthropic/claude-haiku-4-5" }
+  },
+  
+  "categories": {
+    "quick": { "model": "anthropic/claude-haiku-4-5" },
+    "visual-engineering": { "model": "google/gemini-3-pro" }
+  },
+  
+  "background_task": {
+    "defaultConcurrency": 5
+  }
+}
 ```
 
-### Plugin System
+---
 
-| Plugin | Description |
-|--------|-------------|
-| oh-my-opencode@latest | 메인 플러그인 |
-| opencode-antigravity-auth | Antigravity 인증 |
-| opencode-openai-codex-auth | OpenAI Codex 인증 |
+## Built-in Agents
 
-## Agents
+| Agent | Purpose | Default Model |
+|-------|---------|---------------|
+| Sisyphus | Main orchestrator | claude-opus-4-6 |
+| oracle | Architecture, debugging | gpt-5.2 |
+| librarian | Docs, OSS examples | glm-4.7 |
+| explore | Fast codebase search | claude-haiku-4-5 |
+| Prometheus | Strategic planner | claude-opus-4-6 |
+| Metis | Pre-planning analysis | claude-opus-4-6 |
+| Momus | Plan reviewer | gpt-5.2 |
 
-### Built-in Agents
+---
 
-| Agent | Description |
-|-------|-------------|
-| oracle | 질의응답 |
-| librarian | 코드 검색 |
-| frontend engineer | 프론트엔드 작업 |
-| sisyphus | 자동 반복 작업 |
+## Common Errors
 
-### Agent Errors
+### 1. Ollama JSON Parse Error
 
-| Error | Cause | Fix |
-|-------|-------|-----|
-| Agent not found | AGENTS.md 없음 | `/init` 실행 |
-| Permission denied | 권한 설정 | AGENTS.md 확인 |
-| Loop stuck | Sisyphus 무한 루프 | 수동 중단 |
+**Error:**
+```
+Error: JSON Parse error: Unexpected EOF
+```
 
-## Common Issues (from GitHub)
+**Cause:** Ollama returns NDJSON with streaming enabled
 
-### OpenCode Official Issues
+**Fix:**
+```json
+{
+  "agents": {
+    "explore": {
+      "model": "ollama/qwen3-coder",
+      "stream": false
+    }
+  }
+}
+```
 
-| Issue | Description | Status |
-|-------|-------------|--------|
-| Memory consumption | 장시간 사용 후 느려짐 | 알려진 문제 |
-| Windows blank GUI | GUI 열리나 빈 화면 | 로그 확인 필요 |
-| Web UI no folders | 서버 폴더 안 보임 | 설정 확인 |
-| grok-code-fast-1 error | GitHub Copilot 연동 오류 | model ID 확인 |
+---
 
-### Claude Code Official Issues
+### 2. OpenCode Version Too Old
 
-| Issue | Description | Fix |
-|-------|-------------|-----|
-| /compact not working | 4.5→4.6 마이그레이션 후 | /clear 사용 |
-| vim mode Escape | 입력 중 Escape 오작동 | 알려진 문제 |
-| Linux freeze | 2.1.34+ 버전 터미널 멈춤 | 버전 다운그레이드 |
-| Session restore fail | sessions-index.json 누락 | 파일 복구 |
-| 200K context cap | Opus 4.6 1M인데 200K 제한 | 알려진 문제 |
+**Error:**
+```
+Config parsing failed
+```
+
+**Cause:** OpenCode < 1.0.150 has config bugs
+
+**Fix:**
+```bash
+opencode --version  # Check version
+# Upgrade following OpenCode docs
+```
+
+---
+
+### 3. Plugin Not Loaded
+
+**Symptom:** No oh-my-opencode features available
+
+**Check:**
+```bash
+cat ~/.config/opencode/opencode.json | jq '.plugin'
+```
+
+**Fix:**
+```bash
+bunx oh-my-opencode install
+```
+
+---
+
+### 4. AGENTS.md Missing
+
+**Error:**
+```
+[WARN] No AGENTS.md found
+```
+
+**Fix:** Run `/init-deep` in OpenCode
+
+---
+
+### 5. Context Window Limit
+
+**Error:**
+```
+Context window exceeded
+```
+
+**Fix:** Enable auto-resume:
+```json
+{
+  "experimental": {
+    "auto_resume": true,
+    "aggressive_truncation": true
+  }
+}
+```
+
+---
+
+### 6. Agent-Browser Installation Failure
+
+**Error:**
+```
+No binary found for darwin-arm64
+```
+
+**Fix:**
+```bash
+npx playwright install chromium
+```
+
+---
+
+## Skills
+
+### Locations
+```
+.opencode/skills/*/SKILL.md      # Project
+~/.config/opencode/skills/*/SKILL.md  # User
+.claude/skills/*/SKILL.md        # Claude compat
+```
+
+### Built-in Skills
+
+| Skill | Trigger |
+|-------|---------|
+| playwright | Browser automation |
+| frontend-ui-ux | UI/UX tasks |
+| git-master | Git operations |
+
+---
+
+## Magic Keywords
+
+| Keyword | Effect |
+|---------|--------|
+| `ultrawork` / `ulw` | Maximum performance mode |
+| `search` / `find` | Parallel exploration |
+| `analyze` | Deep analysis |
+| `ultrathink` | Extended thinking |
+
+---
+
+## Slash Commands
+
+| Command | Description |
+|---------|-------------|
+| `/init-deep` | Create AGENTS.md |
+| `/ralph-loop` | Self-referential dev loop |
+| `/ulw-loop` | Ultrawork loop |
+| `/refactor` | Intelligent refactoring |
+| `/start-work` | Execute plan |
+
+---
 
 ## Verification
 
 ```bash
-# 버전 확인
-oh-my-opencode --version 2>/dev/null || opencode --version
+# Version
+opencode --version
 
-# 플러그인 확인
+# Plugin status
 cat ~/.config/opencode/opencode.json | jq '.plugin'
 
-# AGENTS.md 존재 확인
+# Config validation
+bunx oh-my-opencode doctor --verbose
+
+# AGENTS.md check
 ls -la ./AGENTS.md
-
-# OAuth 상태 확인
-cat ~/.config/opencode/opencode.json | jq '.auth'
 ```
-
-## Features
-
-### Unique Features
-
-- Background agents
-- LSP/AST tools
-- MCP integration
-- Claude Code compatibility layer
-- Sisyphus (discipline agent)
-
-### Mode Commands
-
-| Command | Description |
-|---------|-------------|
-| `/init` | AGENTS.md 생성 |
-| `/connect` | Provider 연결 |
-| `/share` | 대화 공유 |
-| `/undo`, `/redo` | 변경 취소/재실행 |
-| `Tab` | build ↔ plan 전환 |
