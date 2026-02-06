@@ -1,6 +1,6 @@
 {
   "name": "claude-error-prevention",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "description": "Systematic error detection and auto-resolution for AI coding agents (Claude Code, Oh My OpenCode, OpenClaw, Ghostty)",
   "author": "MadKangYu",
   "license": "MIT",

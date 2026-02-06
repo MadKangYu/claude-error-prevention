@@ -1497,6 +1497,259 @@
         "manual": true,
         "description": "Model ID typo. Available: anthropic/claude-opus-4-5, anthropic/claude-sonnet-4-5, anthropic/claude-haiku-4-5. Check with: openclaw models"
       }
+    },
+    {
+      "id": "cursor-request-limit",
+      "tool": "cursor",
+      "category": "quota",
+      "keywords": [
+        "request limit",
+        "quota",
+        "premium",
+        "slow requests"
+      ],
+      "detect": {
+        "type": "log-pattern",
+        "pattern": "request limit|premium requests.*0"
+      },
+      "message": "Cursor request limit reached",
+      "severity": "warning",
+      "fix": {
+        "manual": true,
+        "description": "Wait for monthly reset, use slow requests, or upgrade plan"
+      }
+    },
+    {
+      "id": "cursor-context-exceeded",
+      "tool": "cursor",
+      "category": "quota",
+      "keywords": [
+        "context",
+        "exceeded",
+        "too long",
+        "conversation"
+      ],
+      "detect": {
+        "type": "log-pattern",
+        "pattern": "context.*exceeded|too long for this model"
+      },
+      "message": "Cursor context window exceeded",
+      "severity": "warning",
+      "fix": {
+        "manual": true,
+        "description": "Start new chat, use @codebase instead of @folder"
+      }
+    },
+    {
+      "id": "cursor-mcp-config",
+      "tool": "cursor",
+      "category": "config",
+      "keywords": [
+        "mcp",
+        "config",
+        "cursor",
+        ".cursor"
+      ],
+      "detect": {
+        "command": "test -f ~/.cursor/mcp.json && jq empty ~/.cursor/mcp.json 2>&1 && echo 0 || echo 1",
+        "condition": "eq",
+        "value": 1
+      },
+      "message": "Invalid or missing MCP config for Cursor",
+      "severity": "warning",
+      "fix": {
+        "manual": true,
+        "description": "Create valid ~/.cursor/mcp.json with MCP server configs"
+      }
+    },
+    {
+      "id": "cursor-slow-indexing",
+      "tool": "cursor",
+      "category": "performance",
+      "keywords": [
+        "indexing",
+        "slow",
+        "codebase",
+        "cpu"
+      ],
+      "detect": {
+        "type": "manual-check",
+        "description": "@codebase returns irrelevant results or indexing never completes"
+      },
+      "message": "Cursor indexing is slow or incomplete",
+      "severity": "info",
+      "fix": {
+        "manual": true,
+        "description": "Add .cursorignore file, rebuild index via Command Palette"
+      }
+    },
+    {
+      "id": "mcp-server-start-fail",
+      "tool": "mcp",
+      "category": "server",
+      "keywords": [
+        "spawn",
+        "ENOENT",
+        "failed to start",
+        "npx"
+      ],
+      "detect": {
+        "type": "log-pattern",
+        "pattern": "spawn.*ENOENT|failed to start"
+      },
+      "message": "MCP server failed to start",
+      "severity": "error",
+      "fix": {
+        "manual": true,
+        "description": "Verify command path exists, use absolute paths in config"
+      }
+    },
+    {
+      "id": "mcp-jsonrpc-invalid",
+      "tool": "mcp",
+      "category": "protocol",
+      "keywords": [
+        "JSON-RPC",
+        "invalid",
+        "unexpected token",
+        "stdout"
+      ],
+      "detect": {
+        "type": "log-pattern",
+        "pattern": "Invalid JSON-RPC|Unexpected token|Expected JSON-RPC"
+      },
+      "message": "MCP server returned invalid JSON-RPC",
+      "severity": "error",
+      "fix": {
+        "manual": true,
+        "description": "Server printing to stdout - redirect logs to stderr"
+      }
+    },
+    {
+      "id": "mcp-tool-not-found",
+      "tool": "mcp",
+      "category": "protocol",
+      "keywords": [
+        "tool not found",
+        "available tools",
+        "mismatch"
+      ],
+      "detect": {
+        "type": "log-pattern",
+        "pattern": "Tool.*not found|Available tools"
+      },
+      "message": "MCP tool not found",
+      "severity": "error",
+      "fix": {
+        "manual": true,
+        "description": "Check exact tool name - case sensitive"
+      }
+    },
+    {
+      "id": "mcp-timeout",
+      "tool": "mcp",
+      "category": "server",
+      "keywords": [
+        "timeout",
+        "waiting",
+        "response",
+        "30000ms"
+      ],
+      "detect": {
+        "type": "log-pattern",
+        "pattern": "Timeout waiting|timed out after"
+      },
+      "message": "MCP server response timeout",
+      "severity": "warning",
+      "fix": {
+        "manual": true,
+        "description": "Increase timeout in config, check server logs"
+      }
+    },
+    {
+      "id": "provider-anthropic-auth",
+      "tool": "provider",
+      "category": "auth",
+      "keywords": [
+        "anthropic",
+        "authentication",
+        "invalid api key",
+        "401"
+      ],
+      "detect": {
+        "type": "log-pattern",
+        "pattern": "authentication_error|Invalid API Key"
+      },
+      "message": "Anthropic API key invalid",
+      "severity": "error",
+      "fix": {
+        "manual": true,
+        "description": "Verify key format: sk-ant-api03-... Regenerate at console.anthropic.com"
+      }
+    },
+    {
+      "id": "provider-anthropic-overloaded",
+      "tool": "provider",
+      "category": "quota",
+      "keywords": [
+        "overloaded",
+        "529",
+        "anthropic",
+        "capacity"
+      ],
+      "detect": {
+        "type": "log-pattern",
+        "pattern": "overloaded_error|529"
+      },
+      "message": "Anthropic API overloaded",
+      "severity": "warning",
+      "fix": {
+        "manual": true,
+        "description": "Retry with 30s exponential backoff or use fallback provider"
+      }
+    },
+    {
+      "id": "provider-openai-quota",
+      "tool": "provider",
+      "category": "quota",
+      "keywords": [
+        "openai",
+        "quota",
+        "exceeded",
+        "insufficient"
+      ],
+      "detect": {
+        "type": "log-pattern",
+        "pattern": "insufficient_quota|exceeded your current quota"
+      },
+      "message": "OpenAI quota exceeded",
+      "severity": "error",
+      "fix": {
+        "manual": true,
+        "description": "Add credits at platform.openai.com/account/billing"
+      }
+    },
+    {
+      "id": "provider-rate-limit",
+      "tool": "provider",
+      "category": "quota",
+      "keywords": [
+        "rate limit",
+        "429",
+        "too many requests",
+        "TPM",
+        "RPM"
+      ],
+      "detect": {
+        "type": "log-pattern",
+        "pattern": "rate_limit_error|429|Too Many Requests"
+      },
+      "message": "API rate limit exceeded",
+      "severity": "warning",
+      "fix": {
+        "manual": true,
+        "description": "Implement exponential backoff, reduce request frequency"
+      }
     }
   ]
 }

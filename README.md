@@ -1,7 +1,7 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/patterns-68-blue?style=for-the-badge" alt="Patterns">
-  <img src="https://img.shields.io/badge/auto--fix-45+-green?style=for-the-badge" alt="Auto-fix">
-  <img src="https://img.shields.io/badge/version-3.0-orange?style=for-the-badge" alt="Version">
+  <img src="https://img.shields.io/badge/patterns-81-blue?style=for-the-badge" alt="Patterns">
+  <img src="https://img.shields.io/badge/auto--fix-50+-green?style=for-the-badge" alt="Auto-fix">
+  <img src="https://img.shields.io/badge/version-3.1-orange?style=for-the-badge" alt="Version">
 </p>
 
 <h1 align="center">AI Agent Error Prevention</h1>
@@ -18,7 +18,7 @@
 │  [OK] Scope: crush (v1.2.0)                                 │
 │  [OK] Scope: obsidian                                       │
 │                                                             │
-│  Scanning 67 patterns...                                    │
+│  Scanning 81 patterns...                                    │
 │                                                             │
 │  [FIX] claude-duplicate-install → removed npm version       │
 │  [FIX] claude-settings-schema → added $schema               │
@@ -52,7 +52,7 @@ cd claude-error-prevention
 └──────────┘     └──────────┘     └──────────┘     └──────────┘
      │                │                │                │
      ▼                ▼                ▼                ▼
-  Claude           67 known        Backup +         Confirm
+  Claude           81 known        Backup +         Confirm
   Crush            error           Apply fix        success
   OpenClaw         patterns        or report        or rollback
   Obsidian                         manual
@@ -71,7 +71,7 @@ cd claude-error-prevention
 | `fix-all` | Fix all auto-fixable |
 | `scope` | Show detected tools |
 | `doctor` | Run health checks |
-| `list` | List all 67 patterns |
+| `list` | List all 81 patterns |
 
 ---
 
@@ -82,10 +82,13 @@ cd claude-error-prevention
 │  SUPPORTED TOOLS                                            │
 ├─────────────────┬──────────┬────────────────────────────────┤
 │  Claude Code    │ 10 patterns │ ████████████████████ 80%    │
+│  Cursor IDE     │  4 patterns │ ██████████████       60%    │
 │  Crush/OpenCode │  5 patterns │ ██████████████████   60%    │
 │  OpenClaw       │  6 patterns │ ██████████           50%    │
 │  Obsidian/QMD   │  4 patterns │ ██████████           50%    │
 │  Oh My OpenCode │  5 patterns │ ████████████████     80%    │
+│  MCP Servers    │  4 patterns │ ██████████████       60%    │
+│  API Providers  │  4 patterns │ ████████             40%    │
 │  System         │ 20 patterns │ ██████████████████   75%    │
 │  Korean Errors  │  4 patterns │ ████                  0%    │
 └─────────────────┴──────────┴────────────────────────────────┘
@@ -173,10 +176,13 @@ Detected scopes: global claude crush obsidian iterm2 ghostty
 
 ```
 claude-*          ──▶  Installation, config, MCP, JSON
+cursor-*          ──▶  Context, indexing, MCP config
 opencode-*        ──▶  Migration to Crush, providers  
 openclaw-*        ──▶  Gateway, Telegram bots, security
 obsidian-*        ──▶  Vault, QMD indexing, sync
 oh-my-opencode-*  ──▶  Plugin, agents, Ollama
+mcp-*             ──▶  Server startup, JSON-RPC, tools
+provider-*        ──▶  Auth, rate limits, quotas
 server-*          ──▶  Connection, timeout, SSL
 quota-*           ──▶  Rate limits, context, daily
 install-*         ──▶  Permissions, dependencies
@@ -246,7 +252,7 @@ claude-error-prevention/
 │   ├── utils.sh              # Shared utilities
 │   └── scope.sh              # Scope detection
 ├── patterns/
-│   └── error-patterns.json   # 67 patterns
+│   └── error-patterns.json   # 81 patterns
 ├── docs/
 │   ├── error-examples.md     # Real error messages
 │   ├── korean-errors.md      # Korean-specific guide
@@ -308,7 +314,7 @@ MIT
 ---
 
 <p align="center">
-  <strong>67 patterns · 45+ auto-fixes · Zero configuration</strong>
+  <strong>81 patterns · 50+ auto-fixes · Zero configuration</strong>
 </p>
 
 <p align="center">
