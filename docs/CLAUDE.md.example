@@ -1,0 +1,35 @@
+# User Memory
+
+Personal preferences for all projects.
+
+## Documentation Rules
+
+- Copy official docs verbatim (no summarization, no translation)
+- Translate only when explicitly requested
+- Verify against GitHub raw, not WebFetch
+- Show verification output, never claim "100%"
+
+## Installation Rules
+
+- Check existing installations first: `which -a [tool]`
+- Use official methods only (native > homebrew > npm)
+- Verify with actual command output
+- Remove duplicates before installing
+
+## Verification Rules
+
+- Always show command output, not just "done"
+- Use GitHub raw for source of truth
+- When uncertain, ask instead of assuming
+
+## Config Paths
+
+- MCP config: `~/.claude/claude_code_config.json`
+- Settings: `~/.claude/settings.json`
+- Never use `~/.mcp.json` (deprecated)
+
+## Imports
+
+- @~/.claude/rules/error-prevention.md
+- @~/.claude/rules/installation.md
+- @~/.claude/rules/documentation.md
