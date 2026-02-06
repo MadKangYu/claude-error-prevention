@@ -113,8 +113,9 @@
       "message": "Invalid JSON in settings.json",
       "severity": "error",
       "fix": {
-        "manual": true,
-        "description": "Manually fix JSON syntax errors"
+        "command": "cp ~/.claude/settings.json ~/.claude/settings.json.bak && echo '{}' > ~/.claude/settings.json && echo '✅ Reset to empty JSON. Backup: ~/.claude/settings.json.bak'",
+        "description": "Backup and reset to valid empty JSON",
+        "verify": "jq empty ~/.claude/settings.json && echo 'Valid JSON'"
       }
     },
     {
@@ -137,8 +138,9 @@
       "message": "Invalid JSON in claude_code_config.json",
       "severity": "error",
       "fix": {
-        "manual": true,
-        "description": "Manually fix JSON syntax errors"
+        "command": "cp ~/.claude/claude_code_config.json ~/.claude/claude_code_config.json.bak 2>/dev/null; echo '{\"mcpServers\":{}}' > ~/.claude/claude_code_config.json && echo '✅ Reset to minimal valid config. Backup saved if existed.'",
+        "description": "Backup and reset to valid minimal MCP config",
+        "verify": "jq empty ~/.claude/claude_code_config.json && echo 'Valid JSON'"
       }
     },
     {
@@ -496,8 +498,10 @@
       "message": "User memory file (~/.claude/CLAUDE.md) not found",
       "severity": "info",
       "fix": {
-        "manual": true,
-        "description": "Create ~/.claude/CLAUDE.md with your preferences"
+        "command": "mkdir -p ~/.claude && cat > ~/.claude/CLAUDE.md << 'EOF'\n# User Preferences\n\n## Communication\n- Language: English\n- Style: Concise, technical\n\n## Coding\n- Prefer TypeScript over JavaScript\n- Use functional patterns when appropriate\n\n## Environment\n- OS: $(uname -s)\n- Shell: $(basename $SHELL)\nEOF\necho '✅ Created ~/.claude/CLAUDE.md - Edit to customize your preferences'",
+        "description": "Create template CLAUDE.md with common preferences",
+        "verify": "test -f ~/.claude/CLAUDE.md && echo 'OK'",
+        "docs_url": "https://docs.anthropic.com/en/docs/claude-code/memory"
       }
     },
     {
@@ -538,8 +542,9 @@
       "message": "No custom skills found",
       "severity": "info",
       "fix": {
-        "manual": true,
-        "description": "Add custom skills to ~/.claude/skills/"
+        "command": "mkdir -p ~/.claude/skills && echo '📚 Available community skills:' && echo '  - git-master: Advanced git operations' && echo '  - playwright: Browser automation' && echo '  - frontend-ui-ux: UI/UX development' && echo '' && echo '💡 To add a skill, create ~/.claude/skills/<name>.md'",
+        "description": "List available skills and show how to add custom ones",
+        "verify": "ls ~/.claude/skills/ 2>/dev/null || echo 'Skills directory ready'"
       }
     },
     {
@@ -624,8 +629,9 @@
       "message": "Git user email not configured globally",
       "severity": "warning",
       "fix": {
-        "manual": true,
-        "description": "Run: git config --global user.email 'your@email.com'"
+        "command": "read -p 'Enter your email: ' EMAIL && git config --global user.email \"$EMAIL\" && read -p 'Enter your name: ' NAME && git config --global user.name \"$NAME\" && echo '✅ Git user configured'",
+        "description": "Interactive prompt to configure git user",
+        "verify": "git config --global --list | grep user"
       }
     },
     {
@@ -669,8 +675,10 @@
       "message": "npm global directory owned by root (sudo npm was used)",
       "severity": "error",
       "fix": {
-        "manual": true,
-        "description": "Fix npm permissions: https://docs.npmjs.com/resolving-eacces-permissions-errors"
+        "command": "mkdir -p ~/.npm-global && npm config set prefix '~/.npm-global' && echo 'export PATH=~/.npm-global/bin:$PATH' >> ~/.zshrc && echo '✅ npm prefix set to ~/.npm-global. Restart terminal or run: source ~/.zshrc'",
+        "description": "Change npm prefix to user directory (avoids sudo)",
+        "verify": "npm config get prefix",
+        "docs_url": "https://docs.npmjs.com/resolving-eacces-permissions-errors"
       }
     },
     {
@@ -715,8 +723,10 @@
       "message": ".env or secrets file tracked in git (SECURITY RISK)",
       "severity": "error",
       "fix": {
-        "manual": true,
-        "description": "Remove from git: git rm --cached .env && echo '.env' >> .gitignore"
+        "command": "git rm --cached .env 2>/dev/null; grep -q '^.env$' .gitignore 2>/dev/null || echo '.env' >> .gitignore && echo '✅ Removed .env from git tracking. IMPORTANT: Rotate any exposed secrets!'",
+        "description": "Remove .env from git and add to .gitignore",
+        "verify": "git ls-files | grep -E '^\\.env$' || echo 'OK: .env not tracked'",
+        "docs_url": "https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/removing-sensitive-data-from-a-repository"
       }
     },
     {
@@ -736,8 +746,9 @@
       "message": "node_modules tracked in git (bloated repo)",
       "severity": "warning",
       "fix": {
-        "manual": true,
-        "description": "Remove: git rm -r --cached node_modules && echo 'node_modules/' >> .gitignore"
+        "command": "git rm -r --cached node_modules 2>/dev/null; grep -q '^node_modules' .gitignore 2>/dev/null || echo 'node_modules/' >> .gitignore && echo '✅ Removed node_modules from git. Run: git commit -m \"Remove node_modules from tracking\"'",
+        "description": "Remove node_modules from git and add to .gitignore",
+        "verify": "git ls-files | grep -c node_modules || echo 'OK: node_modules not tracked'"
       }
     },
     {
@@ -757,8 +768,9 @@
       "message": "Documentation was summarized instead of copied verbatim",
       "severity": "error",
       "fix": {
-        "manual": true,
-        "description": "Always use: curl -s https://raw.githubusercontent.com/..."
+        "command": "echo '✅ Correct approach for fetching docs:' && echo 'curl -s https://raw.githubusercontent.com/{owner}/{repo}/main/README.md' && echo '' && echo '❌ Never use WebFetch for docs - it summarizes content'",
+        "description": "Use curl/wget for verbatim docs, not AI-powered fetchers",
+        "example": "curl -s https://raw.githubusercontent.com/anthropics/claude-code/main/README.md"
       }
     },
     {
@@ -778,8 +790,9 @@
       "message": "WebFetch used for verification (AI interpretation bias)",
       "severity": "warning",
       "fix": {
-        "manual": true,
-        "description": "Use GitHub raw or curl for verification, not WebFetch"
+        "command": "echo '✅ Verification methods (no AI bias):' && echo '  1. curl -sf URL | head -20' && echo '  2. gh api repos/{owner}/{repo}/contents/{path}' && echo '  3. git show origin/main:path/to/file' && echo '' && echo '❌ Avoid: WebFetch, AI-powered scrapers'",
+        "description": "Use direct HTTP/git for verification to avoid AI interpretation",
+        "example": "curl -sf https://api.github.com/repos/owner/repo/releases/latest | jq .tag_name"
       }
     },
     {
@@ -949,8 +962,9 @@
       "message": "Daily usage limit reached",
       "severity": "error",
       "fix": {
-        "manual": true,
-        "description": "Wait until reset or upgrade plan"
+        "command": "echo '⏰ Daily limit options:' && echo '  1. Wait for reset (usually midnight UTC)' && echo '  2. Use fallback: OpenRouter, Gemini, or local Ollama' && echo '  3. Upgrade plan: https://console.anthropic.com/settings/plans' && echo '' && TZ=UTC date '+Reset in ~%H hours (UTC midnight)'",
+        "description": "Show time until reset and fallback options",
+        "fallback_providers": ["openrouter", "google-gemini", "ollama"]
       }
     },
     {
@@ -992,8 +1006,9 @@
       "message": "Server connection refused",
       "severity": "error",
       "fix": {
-        "manual": true,
-        "description": "Check if server is running, verify port/host"
+        "command": "echo '🔍 Diagnostic:' && lsof -i :${PORT:-3000} 2>/dev/null || echo 'No process on port ${PORT:-3000}' && echo '---' && ps aux | grep -E 'node|python|java' | grep -v grep | head -5",
+        "description": "Check if server process is running and listening on expected port",
+        "verify": "curl -sf http://localhost:${PORT:-3000}/health || curl -sf http://localhost:${PORT:-3000}/ || echo 'Server not responding'"
       }
     },
     {
@@ -1013,8 +1028,9 @@
       "message": "Server request timeout",
       "severity": "warning",
       "fix": {
-        "manual": true,
-        "description": "Increase timeout or check network"
+        "command": "echo '🔍 Network diagnostic:' && ping -c 2 ${HOST:-localhost} 2>/dev/null || echo 'Host unreachable' && echo '---' && curl -w 'Time: %{time_total}s\\n' -o /dev/null -sf http://${HOST:-localhost}:${PORT:-3000}/ 2>/dev/null || echo 'Request failed'",
+        "description": "Check network latency and server response time",
+        "config_hint": "Increase timeout: axios.defaults.timeout = 60000 or fetch with AbortController"
       }
     },
     {
@@ -1077,8 +1093,10 @@
       "message": "Permission denied during installation",
       "severity": "error",
       "fix": {
-        "manual": true,
-        "description": "Fix permissions, avoid sudo for npm"
+        "command": "echo '🔧 Fixing npm permissions (no sudo needed):' && mkdir -p ~/.npm-global && npm config set prefix '~/.npm-global' && grep -q 'npm-global' ~/.zshrc 2>/dev/null || echo 'export PATH=~/.npm-global/bin:$PATH' >> ~/.zshrc && echo '✅ Done. Run: source ~/.zshrc'",
+        "description": "Set npm prefix to user directory to avoid permission issues",
+        "verify": "npm config get prefix | grep -q npm-global && echo 'OK'",
+        "docs_url": "https://docs.npmjs.com/resolving-eacces-permissions-errors"
       }
     },
     {
@@ -1098,8 +1116,9 @@
       "message": "File or directory not found",
       "severity": "error",
       "fix": {
-        "manual": true,
-        "description": "Check path exists, create missing directories"
+        "command": "echo '🔍 Checking common paths:' && ls -la package.json 2>/dev/null || echo '❌ package.json missing' && ls -la node_modules 2>/dev/null || echo '❌ node_modules missing - run: npm install'",
+        "description": "Verify required files exist and install dependencies if needed",
+        "verify": "test -f package.json && test -d node_modules && echo 'OK'"
       }
     },
     {
