@@ -1,3 +1,30 @@
+```
+╔══════════════════════════════════════════════════════════════════════════════════╗
+║                                                                                  ║
+║     █████╗ ██╗    ███████╗██████╗ ██████╗  ██████╗ ██████╗                        ║
+║    ██╔══██╗██║    ██╔════╝██╔══██╗██╔══██╗██╔═══██╗██╔══██╗                       ║
+║    ███████║██║    █████╗  ██████╔╝██████╔╝██║   ██║██████╔╝                       ║
+║    ██╔══██║██║    ██╔══╝  ██╔══██╗██╔══██╗██║   ██║██╔══██╗                       ║
+║    ██║  ██║██║    ███████╗██║  ██║██║  ██║╚██████╔╝██║  ██║                       ║
+║    ╚═╝  ╚═╝╚═╝    ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═╝                       ║
+║                                                                                  ║
+║    ██████╗ ██████╗ ███████╗██╗   ██╗███████╗███╗   ██╗████████╗██╗ ██████╗ ███╗   ██╗ ║
+║    ██╔══██╗██╔══██╗██╔════╝██║   ██║██╔════╝████╗  ██║╚══██╔══╝██║██╔═══██╗████╗  ██║ ║
+║    ██████╔╝██████╔╝█████╗  ██║   ██║█████╗  ██╔██╗ ██║   ██║   ██║██║   ██║██╔██╗ ██║ ║
+║    ██╔═══╝ ██╔══██╗██╔══╝  ╚██╗ ██╔╝██╔══╝  ██║╚██╗██║   ██║   ██║██║   ██║██║╚██╗██║ ║
+║    ██║     ██║  ██║███████╗ ╚████╔╝ ███████╗██║ ╚████║   ██║   ██║╚██████╔╝██║ ╚████║ ║
+║    ╚═╝     ╚═╝  ╚═╝╚══════╝  ╚═══╝  ╚══════╝╚═╝  ╚═══╝   ╚═╝   ╚═╝ ╚═════╝ ╚═╝  ╚═══╝ ║
+║                                                                                  ║
+║    ┌─────────────────────────────────────────────────────────────────────────┐   ║
+║    │  Claude Code · OpenClaw · Oh-my-OpenCode · OpenCode                     │   ║
+║    │  AI 오답노트 · Error Journal · Troubleshooting Database                  │   ║
+║    │                                                                         │   ║
+║    │  Patterns: 83  |  Auto-Fix: 100%  |  Version: 3.1.0                     │   ║
+║    └─────────────────────────────────────────────────────────────────────────┘   ║
+║                                                                                  ║
+╚══════════════════════════════════════════════════════════════════════════════════╝
+```
+
 <p align="center">
   <img src="https://img.shields.io/badge/patterns-83-blue?style=for-the-badge" alt="Patterns">
   <img src="https://img.shields.io/badge/auto--fix-100%25-brightgreen?style=for-the-badge" alt="Auto-fix">
@@ -160,71 +187,438 @@ cd claude-error-prevention
 
 **총 83가지 오류 패턴**을 자동으로 해결합니다.
 
-### 해결하는 주요 에러들
+---
+
+## 📘 Claude Code 에러 사례
 
 ```
-Claude Code:
-- Multiple claude binaries found (중복 설치)
-- Deprecated npm installation exists
-- Invalid JSON in settings.json
-- MCP server spawn ENOENT
-
-OpenClaw:
-- gateway timeout after 30000ms (WS 죽음)
-- FailoverError: OAuth token refresh failed (거짓 양성!)
-- openclaw gateway restart succeeded (실제론 실패)
-- Unknown model: anthropic/claude-opus-4-7
-
-Oh-my-OpenCode:
-- ohmyopencode.com is NOT official (사칭 사이트)
-- bunx oh-my-opencode install 실패
-
-MCP Server:
-- spawn ENOENT (경로 오류)
-- invalid JSON-RPC response
-- MCP server crash
-
-시스템:
-- ECONNREFUSED, ETIMEDOUT
-- npm EACCES permission denied
-- git merge conflict
-- .env exposed in git (보안!)
+┌──────────────────────────────────────────────────────────────────────────────┐
+│   ██████╗██╗      █████╗ ██╗   ██╗██████╗ ███████╗     ██████╗ ██████╗ ██████╗ ███████╗  │
+│  ██╔════╝██║     ██╔══██╗██║   ██║██╔══██╗██╔════╝    ██╔════╝██╔═══██╗██╔══██╗██╔════╝  │
+│  ██║     ██║     ███████║██║   ██║██║  ██║█████╗      ██║     ██║   ██║██║  ██║█████╗    │
+│  ██║     ██║     ██╔══██║██║   ██║██║  ██║██╔══╝      ██║     ██║   ██║██║  ██║██╔══╝    │
+│  ╚██████╗███████╗██║  ██║╚██████╔╝██████╔╝███████╗    ╚██████╗╚██████╔╝██████╔╝███████╗  │
+│   ╚═════╝╚══════╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ╚══════╝     ╚═════╝ ╚═════╝ ╚═════╝ ╚══════╝  │
+│                                                                                          │
+│   Anthropic's AI Coding CLI  |  18 Error Patterns  |  100% Auto-Fix                     │
+└──────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
-### 구체적인 예시
-
-#### 예시 1: 중복 설치 문제
+### 사례 1: 중복 설치 충돌
 
 ```
-문제: Claude Code가 2개 설치되어 충돌
-
-이 도구가 하는 일:
-1. 중복 발견
-2. 오래된 버전(npm) 자동 삭제
-3. 최신 버전(native)만 유지
+에러: Multiple Claude Code installations found
 ```
 
-#### 예시 2: 설정 파일 오류
+| 항목 | 내용 |
+|------|------|
+| **증상** | `claude` 명령어가 이상하게 동작, 버전 충돌 |
+| **원인** | npm 버전과 native 버전이 동시에 설치됨 |
+| **진단** | `which -a claude` → 2개 이상 경로 출력 |
+| **해결** | `npm uninstall -g @anthropic-ai/claude-code` |
+| **검증** | `which -a claude \| wc -l` → 1 |
+
+### 사례 2: 설정 파일 깨짐
 
 ```
-문제: settings.json 파일이 깨져서 실행 안 됨
-
-이 도구가 하는 일:
-1. 깨진 파일 발견
-2. 백업 생성
-3. 올바른 형식으로 복구
+에러: Invalid JSON in settings.json
+에러: SyntaxError: Unexpected token
 ```
 
-#### 예시 3: 서버 연결 실패
+| 항목 | 내용 |
+|------|------|
+| **증상** | Claude Code 실행 안 됨, 설정 로드 실패 |
+| **원인** | JSON 문법 오류 (쉼표, 따옴표 누락) |
+| **진단** | `jq empty ~/.claude/settings.json` |
+| **해결** | 백업 후 빈 JSON으로 초기화: `echo '{}' > ~/.claude/settings.json` |
+| **검증** | `jq empty ~/.claude/settings.json && echo 'OK'` |
+
+### 사례 3: MCP 서버 경로 오류
 
 ```
-문제: MCP 서버가 응답하지 않음
-
-이 도구가 하는 일:
-1. 서버 상태 확인
-2. 프로세스 재시작
-3. 연결 확인
+에러: spawn npx ENOENT
+에러: MCP server failed to start
 ```
+
+| 항목 | 내용 |
+|------|------|
+| **증상** | MCP 서버 연결 실패, 도구 사용 불가 |
+| **원인** | 상대 경로 사용, npx 경로 없음 |
+| **진단** | `which npx` → 경로 확인 |
+| **해결** | 절대 경로 사용: `/usr/local/bin/npx` |
+| **검증** | Claude Code 재시작 후 MCP 도구 호출 |
+
+### 사례 4: npm 설치 deprecated
+
+```
+경고: @anthropic-ai/claude-code is deprecated
+```
+
+| 항목 | 내용 |
+|------|------|
+| **증상** | npm 경고 메시지, 업데이트 안 됨 |
+| **원인** | npm 설치 방식은 2025년부터 deprecated |
+| **해결** | `npm uninstall -g @anthropic-ai/claude-code && curl -fsSL https://claude.ai/install.sh \| bash` |
+| **검증** | `claude --version` |
+
+---
+
+## 🦞 OpenClaw 에러 사례
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│   ██████╗ ██████╗ ███████╗███╗   ██╗ ██████╗██╗      █████╗ ██╗    ██╗       │
+│  ██╔═══██╗██╔══██╗██╔════╝████╗  ██║██╔════╝██║     ██╔══██╗██║    ██║       │
+│  ██║   ██║██████╔╝█████╗  ██╔██╗ ██║██║     ██║     ███████║██║ █╗ ██║       │
+│  ██║   ██║██╔═══╝ ██╔══╝  ██║╚██╗██║██║     ██║     ██╔══██║██║███╗██║       │
+│  ╚██████╔╝██║     ███████╗██║ ╚████║╚██████╗███████╗██║  ██║╚███╔███╔╝       │
+│   ╚═════╝ ╚═╝     ╚══════╝╚═╝  ╚═══╝ ╚═════╝╚══════╝╚═╝  ╚═╝ ╚══╝╚══╝        │
+│                                                                              │
+│   Telegram AI Gateway  |  10 Error Patterns  |  Self-Healing System          │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+> *"에러 발생 후 고치지 말고, 발생 전에 막아라"* — Andrej Karpathy
+
+### 🔴 실제 사례 1: OAuth 거짓 양성 (2026-02-07 새벽 발생)
+
+**최초 에러 메시지:**
+```
+FailoverError: OAuth token refresh failed for anthropic:
+Failed to refresh OAuth token for anthropic.
+Please try again or re-authenticate.
+```
+
+**잘못된 시도들 (오답):**
+| 시도 | 명령어 | 결과 |
+|------|--------|------|
+| Agent 변경 | `github` → `main` | ❌ 실패 |
+| Model 변경 | `haiku` → `openai/gpt-4o` | ❌ 실패 |
+| OAuth 재인증 | `openclaw pair anthropic` | ❌ 실패 |
+| Timeout 증가 | `--timeout 60000` | ❌ 실패 |
+| Timeout 더 증가 | `--timeout 120000` | ❌ 실패 |
+
+**진짜 에러 (숨어있던 것):**
+```
+Error: gateway timeout after 30000ms
+Gateway target: ws://127.0.0.1:18789
+Source: local loopback
+Config: /Users/kangyu_macpro/.openclaw/openclaw.json
+```
+
+**MECE 진단:**
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    MECE 진단 계층 구조                           │
+├─────────────────────────────────────────────────────────────────┤
+│  Layer 4: Application ─── OAuth, Model, Agent                   │
+│       ↑                                                         │
+│  Layer 3: WebSocket ───── Gateway WS Handler  ← ❌ 여기가 문제!  │
+│       ↑                                                         │
+│  Layer 2: HTTP ────────── Gateway HTTP Response ← ✅ 정상       │
+│       ↑                                                         │
+│  Layer 1: Process ─────── launchd ← ✅ 정상                     │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**해결:**
+```bash
+launchctl unload ~/Library/LaunchAgents/ai.openclaw.gateway.plist
+sleep 2
+launchctl load ~/Library/LaunchAgents/ai.openclaw.gateway.plist
+```
+
+**결과:**
+```json
+{
+  "ok": true,
+  "ran": true
+}
+```
+**42초 만에 완료** — 2시간 동안 실패하던 작업이!
+
+> 💡 **핵심 교훈**: 에러 메시지를 그대로 믿지 마라. OAuth가 아니라 WebSocket이 죽어있었다!
+
+---
+
+### 🔴 실제 사례 2: Gateway Restart 거짓 성공
+
+**상황:** `openclaw gateway restart` 실행
+
+**거짓 성공 로그:**
+```
+[06:01:38] ❌ Process: Gateway not loaded
+[06:01:38] 🔄 Recovering: openclaw gateway restart
+[06:01:40] ✅ Gateway restart command succeeded   ← 거짓말!
+[06:01:45] ⏳ Waiting for Gateway... (5s)
+[06:01:45] ❌ HTTP: No response
+[06:01:50] ⏳ Waiting for Gateway... (10s)
+[06:01:50] ❌ HTTP: No response
+...
+[06:02:10] ❌ Recovery: Failed (timeout 30s)
+```
+
+**올바른 방법으로 재시도:**
+```
+[06:03:01] ❌ Process: Gateway not loaded
+[06:03:01] 🔄 Recovering: Gateway restart
+[06:03:04] ✅ launchctl load succeeded   ← 진짜 성공!
+[06:03:09] ⏳ Waiting for Gateway... (5s)
+[06:03:09] ✅ HTTP: OK
+[06:03:12] ✅ Gateway Health: OK
+[06:03:12] ✅ Recovery: Success (after 5s)
+```
+
+**비교:**
+| 방법 | 명령어 | 결과 | 신뢰도 |
+|------|--------|------|--------|
+| 공식 명령어 | `openclaw gateway restart` | ❌ 거짓 성공 | 낮음 |
+| 직접 제어 | `launchctl load` | ✅ 진짜 성공 | 높음 |
+
+> ⚠️ **경고**: 공식 명령어도 실패할 수 있다. `launchctl load`가 더 확실하다!
+
+---
+
+### 🔴 실제 사례 3: HTTP OK인데 WS 죽음
+
+**진단 명령어:**
+```bash
+# Layer 2: HTTP 체크 → OK
+curl -s http://127.0.0.1:18789/health
+```
+```html
+<!doctype html>
+<html lang="en">
+  <head><title>OpenClaw Control</title>...
+```
+
+```bash
+# Layer 3: WebSocket 체크 → 응답 없음!
+timeout 5 openclaw status --json 2>&1 | head -5
+```
+(응답 없음)
+
+**원인:**
+| 구분 | 상태 | 설명 |
+|------|------|------|
+| HTTP (stateless) | ✅ | 각 요청이 독립적 |
+| WebSocket (stateful) | ❌ | 연결 상태 유지 필요, 불안정해짐 |
+
+> 💡 **교훈**: HTTP OK ≠ 시스템 OK. WebSocket도 반드시 체크!
+
+---
+
+### 사례 4: Unknown Model
+
+```
+에러: Unknown model: anthropic/claude-opus-4-7
+```
+
+| 항목 | 내용 |
+|------|------|
+| **증상** | 모델 호출 실패 |
+| **원인** | 모델 ID 오타 (4-7 → 4-6) |
+| **해결** | `openclaw config set defaultModel anthropic/claude-opus-4-6` |
+| **검증** | `openclaw models` |
+
+---
+
+## 🔧 Oh-my-OpenCode 에러 사례
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│   ██████╗ ██╗  ██╗      ███╗   ███╗██╗   ██╗       ██████╗  ██████╗          │
+│  ██╔═══██╗██║  ██║      ████╗ ████║╚██╗ ██╔╝      ██╔═══██╗██╔════╝          │
+│  ██║   ██║███████║█████╗██╔████╔██║ ╚████╔╝ █████╗██║   ██║██║               │
+│  ██║   ██║██╔══██║╚════╝██║╚██╔╝██║  ╚██╔╝  ╚════╝██║   ██║██║               │
+│  ╚██████╔╝██║  ██║      ██║ ╚═╝ ██║   ██║        ╚██████╔╝╚██████╗           │
+│   ╚═════╝ ╚═╝  ╚═╝      ╚═╝     ╚═╝   ╚═╝         ╚═════╝  ╚═════╝           │
+│                                                                              │
+│   OpenCode Plugin System  |  8 Error Patterns  |  Skills & Hooks             │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+### 사례 1: 사칭 사이트 경고
+
+```
+경고: ohmyopencode.com is NOT official!
+```
+
+| 항목 | 내용 |
+|------|------|
+| **증상** | 이상한 사이트에서 다운로드 유도 |
+| **위험** | 🚨 악성코드 가능성 |
+| **공식 소스** | `https://github.com/code-yeongyu/oh-my-opencode` |
+| **안전한 설치** | `bunx oh-my-opencode install` |
+
+### 사례 2: 설치 실패
+
+```
+에러: bunx oh-my-opencode install failed
+에러: ENOENT: no such file or directory
+```
+
+| 항목 | 내용 |
+|------|------|
+| **증상** | 설치 중 오류 |
+| **원인** | bun 미설치 또는 권한 문제 |
+| **진단** | `which bun` |
+| **해결** | `curl -fsSL https://bun.sh/install \| bash` |
+| **검증** | `bun --version` |
+
+### 사례 3: 플러그인 로드 실패
+
+```
+에러: Failed to load skill: playwright
+```
+
+| 항목 | 내용 |
+|------|------|
+| **증상** | 특정 스킬/플러그인 동작 안 함 |
+| **원인** | 의존성 미설치 |
+| **해결** | `bunx oh-my-opencode install --fix` |
+
+---
+
+## 💻 OpenCode / Crush 에러 사례
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│   ██████╗ ██████╗ ███████╗███╗   ██╗ ██████╗ ██████╗ ██████╗ ███████╗        │
+│  ██╔═══██╗██╔══██╗██╔════╝████╗  ██║██╔════╝██╔═══██╗██╔══██╗██╔════╝        │
+│  ██║   ██║██████╔╝█████╗  ██╔██╗ ██║██║     ██║   ██║██║  ██║█████╗          │
+│  ██║   ██║██╔═══╝ ██╔══╝  ██║╚██╗██║██║     ██║   ██║██║  ██║██╔══╝          │
+│  ╚██████╔╝██║     ███████╗██║ ╚████║╚██████╗╚██████╔╝██████╔╝███████╗        │
+│   ╚═════╝ ╚═╝     ╚══════╝╚═╝  ╚═══╝ ╚═════╝ ╚═════╝ ╚═════╝ ╚══════╝        │
+│                                                                              │
+│   Charmbracelet AI Terminal (formerly OpenCode)  |  6 Error Patterns         │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+### 사례 1: OpenCode → Crush 마이그레이션
+
+```
+경고: OpenCode is archived, use Crush instead
+```
+
+| 항목 | 내용 |
+|------|------|
+| **배경** | Charmbracelet이 OpenCode를 Crush로 리브랜딩 |
+| **구버전** | `opencode-ai/opencode` (archived) |
+| **신버전** | `charmbracelet/crush` |
+| **마이그레이션** | `brew uninstall opencode-ai/tap/opencode && brew install charmbracelet/tap/crush` |
+
+### 사례 2: Provider 연결 실패
+
+```
+에러: No AI provider configured
+```
+
+| 항목 | 내용 |
+|------|------|
+| **증상** | 실행은 되는데 AI 응답 없음 |
+| **원인** | API 키 미설정 |
+| **해결** | `crush` 실행 후 `/connect` 명령어 |
+| **검증** | `crush` → 대화 테스트 |
+
+### 사례 3: AGENTS.md 없음
+
+```
+경고: AGENTS.md not found in current directory
+```
+
+| 항목 | 내용 |
+|------|------|
+| **증상** | 프로젝트 컨텍스트 없이 동작 |
+| **해결** | `crush` 실행 후 `/init` 명령어 |
+
+---
+
+## 🔌 MCP Server 에러 사례
+
+### 사례 1: spawn ENOENT
+
+```
+에러: spawn npx ENOENT
+에러: Error: spawn /usr/local/bin/npx ENOENT
+```
+
+| 항목 | 내용 |
+|------|------|
+| **증상** | MCP 서버 시작 실패 |
+| **원인** | 경로에 npx가 없음 |
+| **해결** | MCP 설정에서 절대 경로 사용 |
+| **예시** | `"command": "/opt/homebrew/bin/npx"` |
+
+### 사례 2: Invalid JSON-RPC
+
+```
+에러: MCP server returned invalid response
+에러: JSON parse error
+```
+
+| 항목 | 내용 |
+|------|------|
+| **증상** | MCP 도구 호출 실패 |
+| **원인** | 서버가 stdout에 JSON 외 내용 출력 |
+| **해결** | 서버 코드에서 `console.log` → `console.error`로 변경 |
+| **검증** | `echo '{"jsonrpc":"2.0","method":"initialize","id":1}' \| your-mcp-server 2>/dev/null \| jq .` |
+
+### 사례 3: MCP Server Crash
+
+```
+에러: MCP server exited unexpectedly
+```
+
+| 항목 | 내용 |
+|------|------|
+| **증상** | 간헐적 MCP 연결 끊김 |
+| **원인** | 메모리 누수, 예외 미처리 |
+| **진단** | `claude` 로그 확인 |
+| **해결** | 서버 재시작 또는 업데이트 |
+
+---
+
+## ⚠️ 시스템 공통 에러 사례
+
+### 사례 1: npm 권한 오류
+
+```
+에러: npm EACCES: permission denied
+에러: Error: EACCES: permission denied, mkdir '/usr/local/lib/node_modules'
+```
+
+| 항목 | 내용 |
+|------|------|
+| **증상** | npm 전역 설치 실패 |
+| **원인** | sudo npm 사용 이력 |
+| **해결** | `mkdir ~/.npm-global && npm config set prefix '~/.npm-global'` |
+| **PATH 추가** | `export PATH=~/.npm-global/bin:$PATH` |
+
+### 사례 2: .env 파일 git 노출
+
+```
+경고: .env file tracked in git (SECURITY RISK!)
+```
+
+| 항목 | 내용 |
+|------|------|
+| **위험** | 🚨 API 키, 토큰 노출 |
+| **해결** | `git rm --cached .env && echo '.env' >> .gitignore` |
+| **필수 조치** | 노출된 키 즉시 revoke 후 재발급 |
+
+### 사례 3: Git Merge Conflict
+
+```
+에러: CONFLICT (content): Merge conflict in file.ts
+```
+
+| 항목 | 내용 |
+|------|------|
+| **증상** | git pull/merge 실패 |
+| **진단** | `git diff --name-only --diff-filter=U` |
+| **해결** | 파일 열어서 `<<<<<<`, `======`, `>>>>>>` 마커 해결 |
+| **검증** | `git add <file> && git commit` |
 
 ---
 
