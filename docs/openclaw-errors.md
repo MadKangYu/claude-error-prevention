@@ -994,6 +994,256 @@ log "✅ All healthy"
 
 ---
 
+## 14. CLAUDE.md / MEMORY.md Configuration Errors
+
+> **CRITICAL:** Claude Code와 OpenClaw 모두 CLAUDE.md, MEMORY.md 파일이 잘못 구성되면 설치/실행이 제대로 안 됩니다.
+
+### 14.1 Common Configuration Errors
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ CLAUDE.md / MEMORY.md 흔한 오류                                               │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  1. 잘못된 경로                                                               │
+│     ❌ ~/.mcp.json (deprecated)                                              │
+│     ✅ ~/.claude/claude_code_config.json                                     │
+│                                                                              │
+│  2. Import 문법 오류                                                          │
+│     ❌ @./rules/file.md (relative)                                           │
+│     ✅ @~/.claude/rules/file.md (absolute)                                   │
+│                                                                              │
+│  3. MEMORY.md 200줄 초과                                                      │
+│     ⚠️ 200줄 이후 truncate됨                                                  │
+│     ✅ 상세 내용은 별도 파일로 분리                                            │
+│                                                                              │
+│  4. rules 디렉토리 없음                                                       │
+│     ❌ Import 대상 파일 없음                                                  │
+│     ✅ mkdir -p ~/.claude/rules                                              │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+### 14.2 Correct File Structure
+
+```
+~/.claude/
+├── CLAUDE.md                    # Global user instructions
+├── settings.json                # Claude Code settings
+├── claude_code_config.json      # MCP server config
+├── rules/                       # Modular rule files
+│   ├── error-prevention.md
+│   ├── installation.md
+│   └── documentation.md
+├── scripts/                     # Custom scripts
+│   └── openclaw-healthcheck.sh
+└── projects/
+    └── -Users-kangyu-macpro/
+        └── memory/
+            └── MEMORY.md        # Project-specific memory
+
+~/.openclaw/                     # OpenClaw config (separate!)
+├── openclaw.json
+└── agents/
+```
+
+### 14.3 CLAUDE.md vs MEMORY.md
+
+| File | Location | Scope | Size Limit |
+|------|----------|-------|------------|
+| `~/.claude/CLAUDE.md` | Global | All projects | None |
+| `PROJECT/.claude/MEMORY.md` | Project | This project only | 200 lines |
+| `~/.claude/projects/.../memory/MEMORY.md` | Session | Session memory | 200 lines |
+
+### 14.4 Verification
+
+```bash
+# Check CLAUDE.md exists
+cat ~/.claude/CLAUDE.md | head -20
+
+# Check rules directory
+ls -la ~/.claude/rules/
+
+# Check MEMORY.md line count
+wc -l ~/.claude/projects/*/memory/MEMORY.md
+
+# Check for deprecated paths
+ls ~/.mcp.json 2>/dev/null && echo "❌ Deprecated file exists"
+```
+
+### 14.5 Common Symptoms
+
+| Symptom | Likely Cause | Fix |
+|---------|--------------|-----|
+| Claude ignores instructions | CLAUDE.md path wrong | Check `~/.claude/CLAUDE.md` |
+| Import not working | Rules file missing | Create `~/.claude/rules/` |
+| Memory not persisting | MEMORY.md > 200 lines | Split into topic files |
+| Installation fails | Config syntax error | Validate JSON: `jq . config.json` |
+| Weird AI behavior | Conflicting instructions | Review all CLAUDE.md files |
+
+---
+
+## 15. Multi-Machine Setup (Mac Mini + MacBook)
+
+> 허민님 경험: Mac Mini와 MacBook에서 동일한 설정으로 운영
+
+### 15.1 Path Matching Strategy
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ 멀티 머신 경로 설정                                                           │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  핵심: 유저 이름만 맞추면 됨                                                   │
+│                                                                              │
+│  Mac Mini:  /Users/kangyu/...                                                │
+│  MacBook:   /Users/kangyu/...                                                │
+│                                                                              │
+│  ❌ Wrong:                                                                   │
+│  Mac Mini:  /Users/macmini-user/...                                          │
+│  MacBook:   /Users/macbook-user/...                                          │
+│                                                                              │
+│  ✅ Correct:                                                                 │
+│  Both: /Users/kangyu/... (same username)                                     │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+### 15.2 Why Mac Mini Works Better
+
+| Factor | Mac Mini | MacBook | Impact |
+|--------|----------|---------|--------|
+| Always On | ✅ 24/7 | ❌ Sleep/Wake | Gateway stability |
+| Network | ✅ Wired | ⚠️ Wi-Fi | Consistent connectivity |
+| Thermal | ✅ Passive | ❌ Throttling | Long-running tasks |
+| Battery | N/A | ⚠️ Low power mode | Performance |
+
+**결론:** Gateway는 Mac Mini에서 돌리고, MacBook은 클라이언트로만 사용하는 것이 안정적.
+
+### 15.3 Sync Configuration
+
+```bash
+# Option 1: rsync config files
+rsync -av ~/.claude/ user@macmini:~/.claude/
+rsync -av ~/.openclaw/ user@macmini:~/.openclaw/
+
+# Option 2: Git dotfiles repo
+cd ~
+git init
+git add .claude .openclaw
+git commit -m "dotfiles"
+git remote add origin git@github.com:user/dotfiles.git
+git push
+
+# Option 3: Symlink to shared storage
+# (iCloud, Dropbox, etc.)
+ln -sf ~/iCloud/dotfiles/.claude ~/.claude
+```
+
+### 15.4 Different Behaviors Between Machines
+
+| Scenario | Possible Cause | Check |
+|----------|----------------|-------|
+| Works on Mini, fails on MacBook | Path mismatch | `echo $HOME` on both |
+| Intermittent on MacBook | Sleep/wake cycle | Disable sleep or use Mini |
+| Gateway timeout on MacBook | Network latency | Check `ping localhost` |
+| OAuth fails on MacBook | Different tokens | `cat ~/.openclaw/agents/*/auth-profiles.json` |
+
+### 15.5 Recommended Setup
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                    RECOMMENDED MULTI-MACHINE SETUP                          │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│   ┌─────────────────┐                     ┌─────────────────┐               │
+│   │   Mac Mini      │                     │    MacBook      │               │
+│   │   (Server)      │◀───── Tailscale ────│   (Client)      │               │
+│   │                 │      or SSH         │                 │               │
+│   │ • Gateway :18789│                     │ • Claude Code   │               │
+│   │ • Agents        │                     │ • Development   │               │
+│   │ • 24/7 Running  │                     │ • Portable      │               │
+│   └─────────────────┘                     └─────────────────┘               │
+│                                                                             │
+│   Benefits:                                                                 │
+│   • Gateway never interrupted by sleep                                      │
+│   • Same OAuth tokens used everywhere                                       │
+│   • Consistent performance                                                  │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 16. FAQ (자주 묻는 질문)
+
+### Q: Mac Mini에서는 되는데 MacBook에서 안 돼요
+
+**A:** 대부분 다음 중 하나입니다:
+1. **경로 불일치**: 두 머신의 username이 다름
+2. **Gateway 위치**: MacBook의 Gateway가 sleep에서 깨어날 때 불안정
+3. **OAuth 토큰**: 머신별로 다른 토큰 사용 중
+
+```bash
+# 진단
+echo "Username: $USER"
+echo "Home: $HOME"
+curl -sf http://localhost:18789/health && echo "Gateway OK" || echo "Gateway DOWN"
+```
+
+### Q: CLAUDE.md를 수정했는데 반영이 안 돼요
+
+**A:** Claude Code를 재시작해야 합니다:
+```bash
+# Claude Code 새 세션 시작
+claude --new
+
+# 또는 완전히 종료 후 재시작
+pkill -f claude
+claude
+```
+
+### Q: MEMORY.md가 계속 초기화돼요
+
+**A:** 200줄 제한을 초과했을 가능성:
+```bash
+wc -l ~/.claude/projects/*/memory/MEMORY.md
+# 200줄 초과 시 truncate됨
+
+# 해결: 상세 내용을 별도 파일로 분리
+~/.claude/projects/-Users-kangyu/memory/
+├── MEMORY.md        # Index only (< 200 lines)
+├── openclaw.md      # OpenClaw details
+├── agentation.md    # Agentation details
+└── errors.md        # Error patterns
+```
+
+### Q: Gateway timeout이 계속 발생해요
+
+**A:** Self-healing이 작동 중인지 확인:
+```bash
+# Health check 로그 확인
+tail -20 ~/.cache/openclaw-health/health.log
+
+# Self-healing 서비스 상태
+launchctl list | grep healthcheck
+
+# 수동으로 health check 실행
+~/.claude/scripts/openclaw-healthcheck.sh
+```
+
+### Q: 한글이 깨져요 / 번역이 이상해요
+
+**A:** CLAUDE.md에 명시적으로 언어 설정:
+```markdown
+## Language Rules
+- Respond in Korean unless explicitly asked for English
+- Do NOT translate technical terms (OAuth, Gateway, WebSocket, etc.)
+- Use English for code, Korean for explanations
+```
+
+---
+
 ## Related Documentation
 
 | Document | Description |
@@ -1010,6 +1260,7 @@ log "✅ All healthy"
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 3.1 | 2026-02-07 | Add CLAUDE.md/MEMORY.md errors, Multi-machine setup, FAQ |
 | 3.0 | 2026-02-07 | Complete rewrite with 15 patterns, architecture diagrams |
 | 2.0 | 2026-02-03 | Initial documentation |
 
