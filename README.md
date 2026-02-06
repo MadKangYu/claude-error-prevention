@@ -766,6 +766,21 @@ timeout 5 openclaw status --json 2>&1 | head -5
 | [Beginner Guide](docs/guides/beginner-guide.md) | 용어 사전 + 어원 설명 | 개념 이해 필요한 분 |
 | [Quick Cheatsheet](docs/guides/quick-cheatsheet.md) | 복사-붙여넣기 명령어 | 빠른 설정 원하는 분 |
 
+### 📰 Patch Notes (NEW)
+
+| 문서 | 설명 | 버전 |
+|------|------|------|
+| [2026-02-07 Patch Notes](docs/guides/patch-notes-2026-02-07.md) | Claude Code v2.1.34 업데이트 | 최신 |
+
+**주요 신기능 (2026년 2월 기준):**
+- 🆕 **Claude Opus 4.6** 출시
+- 🆕 **Agent Teams** - 멀티 에이전트 협업 (실험적)
+- 🆕 **Desktop App** - 독립 실행형 앱 (Preview)
+- 🆕 **Claude Code on the Web** - 브라우저에서 실행
+- 🆕 **자동 메모리 시스템** - 세션 간 기억 유지
+- 🆕 **Task Management** - 의존성 추적 지원
+- 🆕 **`.claude/rules/`** - 모듈별 규칙 분리
+
 ---
 
 ## 문제가 생기면?
