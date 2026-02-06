@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/patterns-67-blue?style=for-the-badge" alt="Patterns">
+  <img src="https://img.shields.io/badge/patterns-68-blue?style=for-the-badge" alt="Patterns">
   <img src="https://img.shields.io/badge/auto--fix-45+-green?style=for-the-badge" alt="Auto-fix">
   <img src="https://img.shields.io/badge/version-3.0-orange?style=for-the-badge" alt="Version">
 </p>
