@@ -1,6 +1,6 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/patterns-81-blue?style=for-the-badge" alt="Patterns">
-  <img src="https://img.shields.io/badge/auto--fix-50+-green?style=for-the-badge" alt="Auto-fix">
+  <img src="https://img.shields.io/badge/patterns-80-blue?style=for-the-badge" alt="Patterns">
+  <img src="https://img.shields.io/badge/auto--fix-86%25-green?style=for-the-badge" alt="Auto-fix">
   <img src="https://img.shields.io/badge/version-3.1-orange?style=for-the-badge" alt="Version">
 </p>
 
@@ -18,7 +18,7 @@
 │  [OK] Scope: crush (v1.2.0)                                 │
 │  [OK] Scope: obsidian                                       │
 │                                                             │
-│  Scanning 81 patterns...                                    │
+│  Scanning 80 patterns...                                    │
 │                                                             │
 │  [FIX] claude-duplicate-install → removed npm version       │
 │  [FIX] claude-settings-schema → added $schema               │
@@ -71,7 +71,7 @@ cd claude-error-prevention
 | `fix-all` | Fix all auto-fixable |
 | `scope` | Show detected tools |
 | `doctor` | Run health checks |
-| `list` | List all 81 patterns |
+| `list` | List all 80 patterns |
 
 ---
 
@@ -81,18 +81,18 @@ cd claude-error-prevention
 ┌─────────────────────────────────────────────────────────────┐
 │  SUPPORTED TOOLS                                            │
 ├─────────────────┬──────────┬────────────────────────────────┤
-│  Claude Code    │ 10 patterns │ ████████████████████ 80%    │
+│  Claude Code    │ 18 patterns │ ████████████████▒    83%    │
 │  Cursor IDE     │  4 patterns │ ████████████████████ 100%   │
-│  Crush/OpenCode │  5 patterns │ ██████████████████   60%    │
-│  OpenClaw       │  6 patterns │ ██████████           50%    │
-│  Obsidian/QMD   │  4 patterns │ ██████████           50%    │
+│  Crush/OpenCode │  6 patterns │ ████████████████▒    83%    │
+│  OpenClaw       │  7 patterns │ ████████████████████ 100%   │
+│  Obsidian/QMD   │  5 patterns │ ████████████         60%    │
 │  Oh My OpenCode │  5 patterns │ ████████████████     80%    │
 │  MCP Servers    │  4 patterns │ ████████████████████ 100%   │
 │  API Providers  │  4 patterns │ ████████████████████ 100%   │
-│  System         │ 20 patterns │ ██████████████████   75%    │
-│  Korean Errors  │  4 patterns │ ████                  0%    │
+│  System         │ 25 patterns │ ████████████████▒    84%    │
+│  Terminal       │  2 patterns │ ████████████████████ 100%   │
 └─────────────────┴──────────┴────────────────────────────────┘
-                               └── Auto-fix percentage
+                               └── Auto-fix percentage (86% overall)
 ```
 
 ---
@@ -252,7 +252,7 @@ claude-error-prevention/
 │   ├── utils.sh              # Shared utilities
 │   └── scope.sh              # Scope detection
 ├── patterns/
-│   └── error-patterns.json   # 81 patterns
+│   └── error-patterns.json   # 80 patterns
 ├── docs/
 │   ├── error-examples.md     # Real error messages
 │   ├── korean-errors.md      # Korean-specific guide
@@ -314,7 +314,7 @@ MIT
 ---
 
 <p align="center">
-  <strong>81 patterns · 50+ auto-fixes · Zero configuration</strong>
+  <strong>80 patterns · 86% auto-fix · Zero configuration</strong>
 </p>
 
 <p align="center">

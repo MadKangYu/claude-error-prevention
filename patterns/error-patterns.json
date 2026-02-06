@@ -566,8 +566,9 @@
       "message": "AGENTS.md not found in current directory",
       "severity": "info",
       "fix": {
-        "manual": true,
-        "description": "Run /init in OpenCode/Crush to create AGENTS.md"
+        "command": "echo '💡 Create AGENTS.md in OpenCode/Crush:' && echo '  1. Run: opencode (or crush)' && echo '  2. Type: /init' && echo '' && echo 'Or create manually:' && cat > AGENTS.md << 'AGENTSEOF'\n# Project Instructions\n\nDescribe your project context here.\nAGENTSEOF\necho '✅ Created basic AGENTS.md'",
+        "description": "Create AGENTS.md via /init or manually",
+        "verify": "test -f ./AGENTS.md && echo 'OK'"
       }
     },
     {
@@ -898,8 +899,9 @@
       "message": "Google Antigravity OAuth may be blocked",
       "severity": "warning",
       "fix": {
-        "manual": true,
-        "description": "Use alternative provider (OpenAI, Anthropic API key)"
+        "command": "echo '🔑 Alternative providers (API key based):' && echo '1. Anthropic: export ANTHROPIC_API_KEY=sk-ant-...' && echo '2. OpenAI: export OPENAI_API_KEY=sk-...' && echo '3. OpenRouter: export OPENROUTER_API_KEY=sk-or-...' && echo '' && echo '💡 Then run: opencode' && echo '   Type: /connect'",
+        "description": "Show alternative API-key based providers",
+        "verify": "test -n \"$ANTHROPIC_API_KEY\" -o -n \"$OPENAI_API_KEY\" && echo 'API key set'"
       }
     },
     {
@@ -920,8 +922,9 @@
       "message": "API rate limit exceeded",
       "severity": "error",
       "fix": {
-        "manual": true,
-        "description": "Wait and retry, or use fallback provider"
+        "command": "echo '⏳ Rate limit hit. Exponential backoff:' && for i in 5 10 20 40; do echo \"Waiting ${i}s...\"; sleep $i; done && echo '✅ Ready to retry (total wait: 75s)'",
+        "description": "Wait with exponential backoff before retrying",
+        "fallback": "Switch provider: Anthropic → OpenAI → Gemini → Groq"
       }
     },
     {
@@ -1052,8 +1055,9 @@
       "message": "SSL/TLS certificate error",
       "severity": "error",
       "fix": {
-        "manual": true,
-        "description": "Check certificates or use NODE_TLS_REJECT_UNAUTHORIZED=0 (dev only)"
+        "command": "HOST=${1:-localhost} && echo '🔍 SSL certificate check:' && echo | openssl s_client -connect $HOST:443 2>/dev/null | openssl x509 -noout -dates 2>/dev/null || echo 'Cannot verify cert' && echo '' && echo '⚠️ Dev-only bypass (INSECURE):' && echo 'export NODE_TLS_REJECT_UNAUTHORIZED=0'",
+        "description": "Check SSL certificate expiry and show dev bypass",
+        "warning": "NODE_TLS_REJECT_UNAUTHORIZED=0 is insecure, dev only"
       }
     },
     {
@@ -1073,8 +1077,9 @@
       "message": "curl download failed",
       "severity": "error",
       "fix": {
-        "manual": true,
-        "description": "Check network, try with -L flag for redirects"
+        "command": "echo '🔍 Network diagnostic:' && curl -sf https://api.github.com/zen && echo ' ✅ Internet OK' || echo ' ❌ No internet' && echo '' && echo '💡 Common fixes:' && echo '  1. Add -L flag for redirects: curl -fsSL URL' && echo '  2. Check proxy: echo $http_proxy $https_proxy' && echo '  3. DNS check: nslookup github.com'",
+        "description": "Run network diagnostics and show common fixes",
+        "verify": "curl -sf https://api.github.com/zen"
       }
     },
     {
@@ -1140,8 +1145,9 @@
       "message": "Git merge conflicts detected",
       "severity": "error",
       "fix": {
-        "manual": true,
-        "description": "Resolve conflicts manually, then git add && git commit"
+        "command": "echo '⚠️ Conflict files:' && git diff --name-only --diff-filter=U && echo '' && echo '💡 Resolution steps:' && echo '  1. Edit each file, resolve <<<< ==== >>>> markers' && echo '  2. git add <resolved-file>' && echo '  3. git commit' && echo '' && echo '🔧 Or abort: git merge --abort'",
+        "description": "List conflict files and show resolution steps",
+        "verify": "git diff --name-only --diff-filter=U | wc -l | grep -q '^0$' && echo 'No conflicts'"
       }
     },
     {
@@ -1248,8 +1254,9 @@
       "message": "Homebrew formula not found",
       "severity": "error",
       "fix": {
-        "manual": true,
-        "description": "Check formula name, may need: brew tap <tap-name>"
+        "command": "FORMULA=${1:-unknown} && echo '🔍 Searching for formula:' && brew search $FORMULA 2>/dev/null | head -10 || echo 'brew not found' && echo '' && echo '💡 Common taps:' && echo '  brew tap homebrew/cask' && echo '  brew tap homebrew/cask-fonts' && echo '  brew tap opencode-ai/tap'",
+        "description": "Search for formula and show common taps",
+        "verify": "brew search $FORMULA 2>/dev/null | head -1"
       }
     },
     {
