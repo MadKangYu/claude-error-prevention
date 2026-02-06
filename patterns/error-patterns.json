@@ -344,8 +344,9 @@
       "message": "Sync conflict files detected in vault",
       "severity": "warning",
       "fix": {
-        "manual": true,
-        "description": "Manually resolve sync conflicts and delete conflict files"
+        "command": "VAULT=${OBSIDIAN_VAULT:-~/Obsidian/Vault} && echo '🔍 Sync conflict files:' && find \"$VAULT\" -name '*sync-conflict*' -o -name '*.syncthing*' 2>/dev/null | head -20 && echo '' && echo '💡 Review each file, keep the correct version, delete conflicts'",
+        "description": "List sync conflict files for manual review",
+        "verify": "find \"${OBSIDIAN_VAULT:-~/Obsidian/Vault}\" -name '*sync-conflict*' 2>/dev/null | wc -l"
       }
     },
     {
@@ -1269,8 +1270,9 @@
       "message": "Telegram bot not responding",
       "severity": "error",
       "fix": {
-        "manual": true,
-        "description": "Check: gateway health, bot token, webhook config"
+        "command": "echo '🔍 Diagnostic checks:' && echo '1. Gateway health:' && curl -sf http://localhost:18789/health && echo ' ✅' || echo ' ❌ Gateway down' && echo '2. Bot token:' && test -n \"$TELEGRAM_BOT_TOKEN\" && echo ' ✅ Token set' || echo ' ❌ TELEGRAM_BOT_TOKEN not set' && echo '3. Webhook:' && curl -sf \"https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getWebhookInfo\" 2>/dev/null | jq -r '.result.url // \"Not configured\"' || echo ' Check manually'",
+        "description": "Run diagnostic checks for gateway, token, and webhook",
+        "verify": "curl -sf http://localhost:18789/health"
       }
     },
     {
@@ -1291,8 +1293,9 @@
       "message": "Telegram bot token invalid or expired",
       "severity": "error",
       "fix": {
-        "manual": true,
-        "description": "Regenerate token at @BotFather"
+        "command": "echo '🔑 To regenerate Telegram bot token:' && echo '1. Open Telegram, search @BotFather' && echo '2. Send: /mybots' && echo '3. Select your bot → API Token → Revoke' && echo '4. Update TELEGRAM_BOT_TOKEN in your env' && echo '' && open 'https://t.me/BotFather' 2>/dev/null || echo '💡 Open: https://t.me/BotFather'",
+        "description": "Guide to regenerate bot token via @BotFather",
+        "verify": "curl -sf \"https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getMe\" | jq -r '.ok' | grep -q true && echo 'Token valid'"
       }
     },
     {
@@ -1313,8 +1316,9 @@
       "message": "Telegram webhook configuration failed",
       "severity": "error",
       "fix": {
-        "manual": true,
-        "description": "Webhook requires HTTPS with valid SSL certificate"
+        "command": "echo '🔒 Webhook requirements:' && echo '1. HTTPS URL (not HTTP)' && echo '2. Valid SSL certificate (not self-signed)' && echo '3. Port: 443, 80, 88, or 8443' && echo '' && echo '💡 For local dev, use ngrok:' && echo '  ngrok http 18789' && echo '  Then set webhook to ngrok HTTPS URL' && echo '' && echo 'Set webhook:' && echo 'curl -X POST https://api.telegram.org/bot$TOKEN/setWebhook -d url=https://your-domain.com/webhook'",
+        "description": "Show webhook requirements and setup commands",
+        "verify": "curl -sf \"https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getWebhookInfo\" | jq -r '.result.url'"
       }
     },
     {
@@ -1425,8 +1429,9 @@
       "message": "Ollama streaming causes JSON parse error",
       "severity": "error",
       "fix": {
-        "manual": true,
-        "description": "Set stream: false for Ollama models in config"
+        "command": "CONFIG=~/.config/opencode/opencode.json && echo '💡 Add to your Ollama model config:' && echo '{\"models\": {\"ollama/your-model\": {\"stream\": false}}}' && echo '' && test -f \"$CONFIG\" && echo 'Current config:' && jq '.models' \"$CONFIG\" 2>/dev/null || echo 'Config file not found'",
+        "description": "Show how to disable streaming for Ollama models",
+        "config_example": "{\"models\": {\"ollama/llama3\": {\"stream\": false}}}"
       }
     },
     {
@@ -1447,8 +1452,9 @@
       "message": "OpenCode version too old (requires 1.0.150+)",
       "severity": "error",
       "fix": {
-        "manual": true,
-        "description": "Upgrade OpenCode to 1.0.150 or later"
+        "command": "echo '📦 Current version:' && opencode --version 2>/dev/null || echo 'opencode not found' && echo '' && echo '⬆️ Upgrade command:' && echo 'brew upgrade opencode-ai/tap/opencode' && echo '' && echo '💡 Or reinstall:' && echo 'brew uninstall opencode-ai/tap/opencode && brew install opencode-ai/tap/opencode'",
+        "description": "Show current version and upgrade commands",
+        "verify": "opencode --version 2>/dev/null | grep -E '1\\.(0\\.1[5-9]|[1-9])' && echo 'OK: Version 1.0.150+'"
       }
     },
     {
@@ -1469,8 +1475,9 @@
       "message": "AGENTS.md not found (run /init-deep)",
       "severity": "info",
       "fix": {
-        "manual": true,
-        "description": "Run /init-deep in OpenCode to create AGENTS.md"
+        "command": "echo '💡 To create AGENTS.md, run in OpenCode:' && echo '  /init-deep' && echo '' && echo 'Or create manually:' && echo 'cat > AGENTS.md << EOF\n# Project Instructions\n\n## Overview\nDescribe your project here.\n\n## Conventions\n- Code style\n- File structure\nEOF' && echo '' && echo '✅ AGENTS.md provides project context to AI agents'",
+        "description": "Show how to create AGENTS.md via /init-deep or manually",
+        "verify": "test -f ./AGENTS.md && echo 'OK'"
       }
     },
     {
@@ -1513,8 +1520,9 @@
       "message": "Unknown model ID in OpenClaw config",
       "severity": "error",
       "fix": {
-        "manual": true,
-        "description": "Model ID typo. Available: anthropic/claude-opus-4-5, anthropic/claude-sonnet-4-5, anthropic/claude-haiku-4-5. Check with: openclaw models"
+        "command": "echo '📋 Available Anthropic models:' && echo '  anthropic/claude-opus-4-5' && echo '  anthropic/claude-sonnet-4-5' && echo '  anthropic/claude-haiku-4-5' && echo '' && echo '📋 Available OpenAI models:' && echo '  openai/gpt-4o' && echo '  openai/gpt-4-turbo' && echo '' && echo '💡 Check all: openclaw models' && openclaw models 2>/dev/null | head -10 || true",
+        "description": "List available model IDs",
+        "verify": "openclaw models 2>/dev/null | grep -q claude && echo 'OK'"
       }
     },
     {
