@@ -7,14 +7,18 @@
 <h1 align="center">AI Agent Error Prevention</h1>
 
 <p align="center">
-  <strong>AI 코딩 도구의 오류를 자동으로 찾아서 고쳐주는 도구</strong>
+  <strong>Claude Code · OpenClaw · Cursor 오류를 자동으로 찾아서 고쳐주는 도구</strong>
+</p>
+
+<p align="center">
+  <code>Claude Code</code> · <code>OpenClaw</code> · <code>OpenCode</code> · <code>Cursor</code> · <code>Obsidian</code>
 </p>
 
 ---
 
 ## 이게 뭔가요?
 
-**AI 코딩 도구**(Claude Code, Cursor 등)를 사용할 때 발생하는 오류를 **자동으로 진단하고 수정**해주는 프로그램입니다.
+**AI 코딩 도구**(Claude Code, OpenClaw, Cursor 등)를 사용할 때 발생하는 오류를 **자동으로 진단하고 수정**해주는 프로그램입니다.
 
 ### 비유로 설명하면
 
