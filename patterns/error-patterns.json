@@ -1365,6 +1365,116 @@
         "manual": true,
         "description": "STOP - Confirm scope, list affected items, require explicit approval"
       }
+    },
+    {
+      "id": "oh-my-opencode-impersonation-site",
+      "tool": "oh-my-opencode",
+      "category": "security",
+      "keywords": [
+        "ohmyopencode.com",
+        "impersonation",
+        "fake",
+        "security"
+      ],
+      "detect": {
+        "type": "manual-check",
+        "description": "Downloading from ohmyopencode.com instead of GitHub"
+      },
+      "message": "Downloaded from impersonation site (ohmyopencode.com is NOT official)",
+      "severity": "error",
+      "fix": {
+        "manual": true,
+        "description": "Only download from: https://github.com/code-yeongyu/oh-my-opencode/releases"
+      }
+    },
+    {
+      "id": "oh-my-opencode-ollama-streaming",
+      "tool": "oh-my-opencode",
+      "category": "config",
+      "keywords": [
+        "ollama",
+        "streaming",
+        "JSON",
+        "parse",
+        "EOF",
+        "NDJSON"
+      ],
+      "detect": {
+        "type": "log-pattern",
+        "pattern": "JSON Parse error.*EOF|Unexpected EOF"
+      },
+      "message": "Ollama streaming causes JSON parse error",
+      "severity": "error",
+      "fix": {
+        "manual": true,
+        "description": "Set stream: false for Ollama models in config"
+      }
+    },
+    {
+      "id": "oh-my-opencode-old-opencode-version",
+      "tool": "oh-my-opencode",
+      "category": "installation",
+      "keywords": [
+        "version",
+        "1.0.132",
+        "1.0.150",
+        "config",
+        "parsing"
+      ],
+      "detect": {
+        "type": "manual-check",
+        "description": "Using OpenCode version older than 1.0.150"
+      },
+      "message": "OpenCode version too old (requires 1.0.150+)",
+      "severity": "error",
+      "fix": {
+        "manual": true,
+        "description": "Upgrade OpenCode to 1.0.150 or later"
+      }
+    },
+    {
+      "id": "oh-my-opencode-agents-md-missing",
+      "tool": "oh-my-opencode",
+      "category": "config",
+      "keywords": [
+        "AGENTS.md",
+        "init",
+        "agents",
+        "missing"
+      ],
+      "detect": {
+        "command": "test -f ./AGENTS.md && echo 0 || echo 1",
+        "condition": "eq",
+        "value": 1
+      },
+      "message": "AGENTS.md not found (run /init-deep)",
+      "severity": "info",
+      "fix": {
+        "manual": true,
+        "description": "Run /init-deep in OpenCode to create AGENTS.md"
+      }
+    },
+    {
+      "id": "oh-my-opencode-plugin-not-loaded",
+      "tool": "oh-my-opencode",
+      "category": "installation",
+      "keywords": [
+        "plugin",
+        "oh-my-opencode",
+        "not loaded",
+        "opencode.json"
+      ],
+      "detect": {
+        "command": "cat ~/.config/opencode/opencode.json 2>/dev/null | jq -r \".plugin // []\" | grep -c oh-my-opencode || echo 0",
+        "condition": "eq",
+        "value": 0
+      },
+      "message": "oh-my-opencode plugin not in opencode.json",
+      "severity": "warning",
+      "fix": {
+        "command": "bunx oh-my-opencode install",
+        "description": "Run installer to add plugin"
+      }
     }
   ]
 }

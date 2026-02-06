@@ -1,6 +1,6 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #==============================================================================
-# ERROR ENGINE v2.1
+# ERROR ENGINE v2.6
 # Pattern-based error detection, resolution, and verification
 #
 # Architecture:

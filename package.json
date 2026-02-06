@@ -1,0 +1,54 @@
+{
+  "name": "claude-error-prevention",
+  "version": "2.5.0",
+  "description": "Systematic error detection and auto-resolution for AI coding agents (Claude Code, Crush, OpenClaw)",
+  "author": "MadKangYu",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MadKangYu/claude-error-prevention.git"
+  },
+  "homepage": "https://github.com/MadKangYu/claude-error-prevention#readme",
+  "bugs": {
+    "url": "https://github.com/MadKangYu/claude-error-prevention/issues"
+  },
+  "bin": {
+    "claude-error-prevention": "./src/error-engine.sh",
+    "cep": "./src/error-engine.sh"
+  },
+  "files": [
+    "src/",
+    "lib/",
+    "patterns/",
+    "docs/",
+    "scripts/",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "bash src/error-engine.sh scan",
+    "heal": "bash src/error-engine.sh heal",
+    "postinstall": "chmod +x src/error-engine.sh scripts/*.sh 2>/dev/null || true"
+  },
+  "keywords": [
+    "claude",
+    "claude-code",
+    "crush",
+    "opencode",
+    "openclaw",
+    "ai",
+    "error-prevention",
+    "cli",
+    "automation",
+    "developer-tools"
+  ],
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "os": [
+    "darwin",
+    "linux",
+    "!win32"
+  ],
+  "preferGlobal": true
+}

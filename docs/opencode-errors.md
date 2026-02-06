@@ -1,83 +1,91 @@
-# OpenCode / Crush Error Patterns
+# OpenCode / Crush Migration Guide
 
-> **IMPORTANT:** OpenCode has been renamed to **Crush** by Charmbracelet (2026).
+> **IMPORTANT:** OpenCode has been renamed to **Crush** by Charmbracelet.
 > The old `opencode-ai/opencode` repository is archived.
-
----
-
-## Installation
-
-### Crush (Current - Charmbracelet)
-
-```bash
-# Homebrew (recommended)
-brew install charmbracelet/tap/crush
-
-# npm
-npm install -g @charmland/crush
-
-# Windows
-winget install charmbracelet.crush
-```
-
-### Legacy OpenCode (Archived)
-
-```bash
-# No longer maintained
-brew install opencode-ai/tap/opencode
-```
 
 **Source:** https://github.com/charmbracelet/crush
 
 ---
 
-## Configuration
+## Installation (Verified 2026-02-07)
 
-### Config File Locations
+### Crush (Current)
 
-```
-$HOME/.crush.json                       # New Crush config
-$HOME/.config/crush/.crush.json         # XDG location
-./.crush.json                           # Project-specific
+| Platform | Command |
+|----------|---------|
+| **Homebrew** | `brew install charmbracelet/tap/crush` |
+| **npm** | `npm install -g @charmland/crush` |
+| **Winget** | `winget install charmbracelet.crush` |
+| **Scoop** | `scoop bucket add charm https://github.com/charmbracelet/scoop-bucket.git && scoop install crush` |
+| **Arch** | `yay -S crush-bin` |
+| **Go** | `go install github.com/charmbracelet/crush@latest` |
 
-# Legacy OpenCode locations
-$HOME/.config/opencode/opencode.json    # Old config
-$HOME/.config/opencode/.mcp.json        # Old MCP
-```
-
-### Environment Variables
+### Debian/Ubuntu
 
 ```bash
-# Required (at least one)
-ANTHROPIC_API_KEY=      # Claude
-OPENAI_API_KEY=         # OpenAI
-GEMINI_API_KEY=         # Google
-GROQ_API_KEY=           # Groq
-GITHUB_TOKEN=           # GitHub Copilot
+sudo mkdir -p /etc/apt/keyrings
+curl -fsSL https://repo.charm.sh/apt/gpg.key | sudo gpg --dearmor -o /etc/apt/keyrings/charm.gpg
+echo "deb [signed-by=/etc/apt/keyrings/charm.gpg] https://repo.charm.sh/apt/ * *" | sudo tee /etc/apt/sources.list.d/charm.list
+sudo apt update && sudo apt install crush
+```
 
-# Optional
-VERTEXAI_PROJECT=       # Google Cloud
-AWS_ACCESS_KEY_ID=      # AWS Bedrock
-AZURE_OPENAI_ENDPOINT=  # Azure OpenAI
+### Legacy OpenCode (Archived)
+
+```bash
+# NO LONGER MAINTAINED
+brew install opencode-ai/tap/opencode
 ```
 
 ---
 
-## Common Errors
+## Configuration
 
-### 1. Provider Connection
+### Config Locations (Priority Order)
 
-**Error:**
+| Priority | Path | Scope |
+|----------|------|-------|
+| 1 | `.crush.json` | Project |
+| 2 | `crush.json` | Project |
+| 3 | `~/.config/crush/crush.json` | Global (Unix) |
+| 4 | `%LOCALAPPDATA%\crush\crush.json` | Global (Windows) |
+
+### Environment Variables
+
+```bash
+# Override config location
+CRUSH_GLOBAL_CONFIG=/path/to/config.json
+CRUSH_GLOBAL_DATA=/path/to/data
+
+# Provider keys (at least one required)
+ANTHROPIC_API_KEY=sk-ant-...
+OPENAI_API_KEY=sk-...
+GEMINI_API_KEY=...
+GROQ_API_KEY=...
+GITHUB_TOKEN=...
 ```
-Error: No API key found
-```
 
-**Fix:** Set environment variable or configure in config file:
+### Config Schema
+
 ```json
 {
+  "$schema": "https://charm.land/crush.json",
   "providers": {
     "anthropic": {
-      "apiKey": "sk-ant-..."
+      "type": "anthropic",
+      "api_key": "$ANTHROPIC_API_KEY"
+    }
+  },
+  "mcp": {
+    "server-name": {
+      "type": "stdio",
+      "command": "path/to/server",
+      "args": []
+    }
+  },
+  "lsp": {
+    "typescript": {
+      "command": "typescript-language-server",
+      "args": ["--stdio"]
     }
   }
 }
@@ -85,119 +93,128 @@ Error: No API key found
 
 ---
 
+## Migration: OpenCode → Crush
+
+### Step-by-Step
+
+```bash
+# 1. Backup
+cp -r ~/.config/opencode ~/.config/opencode.bak
+
+# 2. Uninstall old
+brew uninstall opencode-ai/tap/opencode 2>/dev/null
+npm uninstall -g opencode-ai 2>/dev/null
+
+# 3. Install Crush
+brew install charmbracelet/tap/crush
+
+# 4. Migrate config
+mkdir -p ~/.config/crush
+cp ~/.config/opencode/opencode.json ~/.config/crush/crush.json
+
+# 5. Update schema reference
+# Change: "$schema": "..." 
+# To:     "$schema": "https://charm.land/crush.json"
+
+# 6. Migrate project files
+mv .opencode.json .crush.json 2>/dev/null
+mv .opencodeignore .crushignore 2>/dev/null
+
+# 7. Update environment variables
+# OPENCODE_* → CRUSH_*
+
+# 8. Verify
+crush --version
+```
+
+### File Renames
+
+| Old | New |
+|-----|-----|
+| `~/.config/opencode/` | `~/.config/crush/` |
+| `opencode.json` | `crush.json` |
+| `.opencode.json` | `.crush.json` |
+| `.opencodeignore` | `.crushignore` |
+| `OPENCODE_*` env vars | `CRUSH_*` env vars |
+
+---
+
+## Common Errors
+
+### 1. No API Key
+
+```
+Error: No API key found
+```
+
+**Fix:** Set provider in config or environment:
+```bash
+export ANTHROPIC_API_KEY=sk-ant-...
+```
+
 ### 2. Old Version Conflict
 
-**Error:**
 ```
 Error: Incompatible version
 ```
 
 **Fix:**
 ```bash
-# Remove old OpenCode
 npm uninstall -g opencode-ai
 rm -rf ~/.config/opencode
-
-# Install Crush
 brew install charmbracelet/tap/crush
 ```
 
----
+### 3. MCP Connection Failed
 
-### 3. MCP Server Issues
-
-**Error:**
 ```
 Error: MCP connection failed
 ```
 
-**Fix:** Check MCP config format and paths:
+**Fix:** Verify MCP config:
 ```json
 {
-  "mcpServers": {
-    "server-name": {
-      "command": "path/to/server",
-      "args": []
+  "mcp": {
+    "server": {
+      "type": "stdio",
+      "command": "/absolute/path/to/server"
     }
   }
 }
 ```
 
----
-
 ### 4. uint64 Schema Warning
 
-**Warning:**
 ```
-unknown format "uint64" ignored in schema at path "#/properties/lastModifiedTime"
+unknown format "uint64" ignored
 ```
 
-**Cause:** MCP server uses non-standard JSON Schema format
-
-**Impact:** Warning only, functionality not affected
-
-**Action:** Safe to ignore. MCP server author should use `"type": "integer"` instead.
-
----
-
-## Migration: OpenCode → Crush
-
-### Steps
-
-1. **Backup old config:**
-   ```bash
-   cp -r ~/.config/opencode ~/.config/opencode.bak
-   ```
-
-2. **Uninstall OpenCode:**
-   ```bash
-   brew uninstall opencode-ai/tap/opencode
-   # or
-   npm uninstall -g opencode-ai
-   ```
-
-3. **Install Crush:**
-   ```bash
-   brew install charmbracelet/tap/crush
-   ```
-
-4. **Migrate config:**
-   ```bash
-   # Config format is similar, may need minor adjustments
-   mv ~/.config/opencode/.opencode.json ~/.crush.json
-   ```
+**Status:** Safe to ignore. MCP server uses non-standard format.
 
 ---
 
 ## Verification
 
 ```bash
-# Check installation
+# Version
 crush --version
 
-# Verify config
-cat ~/.crush.json | jq '.providers | keys'
+# Config check
+cat ~/.config/crush/crush.json | jq '.providers | keys'
 
-# Test connection
+# Provider test
 crush
-# Then type: /connect
+# Then: /connect
 ```
 
 ---
 
-## Features Comparison
+## Features
 
-| Feature | OpenCode (Archived) | Crush (Current) |
-|---------|---------------------|-----------------|
-| Multi-Model | Yes | Yes |
-| MCP Support | Yes | Yes (http, stdio, sse) |
-| LSP Integration | Yes | Yes |
-| Session Management | Yes | Yes |
-| Active Development | No | Yes |
-
----
-
-## Sources
-
-- [Crush GitHub](https://github.com/charmbracelet/crush)
-- [OpenCode GitHub (Archived)](https://github.com/opencode-ai/opencode)
+| Feature | Crush |
+|---------|-------|
+| Multi-Model | ✅ Claude, OpenAI, Gemini, Groq |
+| MCP | ✅ http, stdio, sse |
+| LSP | ✅ Full integration |
+| Sessions | ✅ Persistent |
+| Development | ✅ Active |
