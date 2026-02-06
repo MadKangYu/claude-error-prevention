@@ -1,17 +1,31 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/patterns-80-blue?style=for-the-badge" alt="Patterns">
+  <img src="https://img.shields.io/badge/patterns-83-blue?style=for-the-badge" alt="Patterns">
   <img src="https://img.shields.io/badge/auto--fix-100%25-brightgreen?style=for-the-badge" alt="Auto-fix">
   <img src="https://img.shields.io/badge/version-3.1.0-orange?style=for-the-badge" alt="Version">
 </p>
 
-<h1 align="center">AI Agent Error Prevention</h1>
+<h1 align="center">Claude Code · OpenClaw · Oh-my-OpenCode · OpenCode</h1>
+<h2 align="center">AI Agent Error Prevention & Auto-Fix</h2>
+<h3 align="center">AI 오답노트 · Error Journal · Troubleshooting Database</h3>
 
 <p align="center">
-  <strong>Claude Code · OpenClaw · Oh-my-OpenCode 오류를 자동으로 찾아서 고쳐주는 도구</strong>
+  <strong>Claude Code, OpenClaw, Oh-my-OpenCode, OpenCode 오류를 자동으로 찾아서 고쳐주는 도구</strong>
 </p>
 
 <p align="center">
-  <code>Claude Code</code> · <code>OpenClaw</code> · <code>Oh-my-OpenCode</code> · <code>OpenCode</code> · <code>Obsidian</code>
+  <code>Claude Code</code> · <code>OpenClaw</code> · <code>Oh-my-OpenCode</code> · <code>OpenCode</code> · <code>Crush</code> · <code>Obsidian</code> · <code>MCP Server</code>
+</p>
+
+<p align="center">
+  <sub>
+    <b>Keywords:</b> Claude Code error, Claude Code 오류, Claude Code troubleshooting, Claude Code fix,
+    OpenClaw error, OpenClaw 오류, OpenClaw gateway timeout, OpenClaw OAuth failed,
+    Oh-my-OpenCode error, Oh-my-OpenCode 오류, Oh-my-OpenCode install,
+    OpenCode error, OpenCode 오류, OpenCode Crush, Charmbracelet Crush,
+    MCP server crash, MCP spawn ENOENT, oauth token expired, gateway timeout 30000ms,
+    ECONNREFUSED, invalid json, AI coding tool error, AI agent error fix,
+    클로드 코드 에러, 오픈클로 에러, AI 코딩 도구 자동 수정, AI 오답노트
+  </sub>
 </p>
 
 ---
@@ -19,6 +33,11 @@
 ## 이게 뭔가요?
 
 **AI 코딩 도구**(Claude Code, OpenClaw, Oh-my-OpenCode 등)를 사용할 때 발생하는 오류를 **자동으로 진단하고 수정**해주는 프로그램입니다.
+
+**실전에서 겪은 에러를 기록한 AI 오답노트(Error Journal)** 역할도 합니다:
+- 🔴 실제 발생한 에러 → 패턴으로 기록
+- 🟢 검증된 해결책 → 자동 수정
+- 🔵 AI가 참조 → 같은 실수 반복 방지
 
 ### 비유로 설명하면
 
@@ -66,8 +85,16 @@ AI 코딩 도구를 사용하다 보면 이런 오류를 만납니다:
 | `Invalid JSON` | 설정 파일 깨짐 | ??? |
 | `OAuth token expired` | 인증 만료 | ??? |
 | `MCP server crash` | 플러그인 오류 | ??? |
+| `gateway timeout after 30000ms` | 게이트웨이 응답 없음 | ??? |
+| `FailoverError: OAuth token refresh failed` | OAuth 갱신 실패 (거짓) | ??? |
+| `Multiple claude binaries found` | Claude Code 중복 설치 | ??? |
+| `spawn ENOENT` | MCP 서버 경로 오류 | ??? |
+| `ws://127.0.0.1:18789 timeout` | WebSocket 연결 실패 | ??? |
+| `Unknown model: anthropic/claude-opus-4-7` | 모델 ID 오타 | ??? |
 
 **개발자가 아니면 해결하기 어렵습니다.**
+
+> 💡 **이 도구는 위 모든 에러를 자동으로 해결합니다!**
 
 ### 이 도구의 해결책
 
@@ -123,14 +150,46 @@ cd claude-error-prevention
 
 | 도구 이름 | 설명 | 해결하는 문제 수 |
 |-----------|------|------------------|
-| **Claude Code** | Anthropic의 AI 코딩 도구 | 18개 |
-| **Cursor** | AI 코드 에디터 | 4개 |
-| **OpenClaw** | AI 자동화 도구 | 7개 |
-| **Obsidian** | 노트 앱 | 5개 |
-| **MCP 서버** | AI 확장 도구 | 4개 |
-| **시스템 전반** | 공통 오류 | 25개 |
+| **Claude Code** | Anthropic의 AI 코딩 CLI | 18개 |
+| **OpenClaw** | Telegram AI Gateway | 10개 |
+| **Oh-my-OpenCode** | OpenCode 플러그인 시스템 | 8개 |
+| **OpenCode / Crush** | Charmbracelet AI 터미널 | 6개 |
+| **Obsidian** | PKM 노트 앱 + QMD | 15개 |
+| **MCP 서버** | Model Context Protocol | 12개 |
+| **시스템 전반** | npm, git, 인증 오류 | 14개 |
 
-**총 80가지 오류 패턴**을 자동으로 해결합니다.
+**총 83가지 오류 패턴**을 자동으로 해결합니다.
+
+### 해결하는 주요 에러들
+
+```
+Claude Code:
+- Multiple claude binaries found (중복 설치)
+- Deprecated npm installation exists
+- Invalid JSON in settings.json
+- MCP server spawn ENOENT
+
+OpenClaw:
+- gateway timeout after 30000ms (WS 죽음)
+- FailoverError: OAuth token refresh failed (거짓 양성!)
+- openclaw gateway restart succeeded (실제론 실패)
+- Unknown model: anthropic/claude-opus-4-7
+
+Oh-my-OpenCode:
+- ohmyopencode.com is NOT official (사칭 사이트)
+- bunx oh-my-opencode install 실패
+
+MCP Server:
+- spawn ENOENT (경로 오류)
+- invalid JSON-RPC response
+- MCP server crash
+
+시스템:
+- ECONNREFUSED, ETIMEDOUT
+- npm EACCES permission denied
+- git merge conflict
+- .env exposed in git (보안!)
+```
 
 ### 구체적인 예시
 
