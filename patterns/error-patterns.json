@@ -671,6 +671,264 @@
         "manual": true,
         "description": "Use alternative provider (OpenAI, Anthropic API key)"
       }
+    },
+    {
+      "id": "quota-rate-limit",
+      "tool": "system",
+      "category": "quota",
+      "keywords": ["rate", "limit", "429", "too many requests", "quota"],
+      "detect": {
+        "type": "log-pattern",
+        "pattern": "rate.limit|429|too.many.requests"
+      },
+      "message": "API rate limit exceeded",
+      "severity": "error",
+      "fix": {
+        "manual": true,
+        "description": "Wait and retry, or use fallback provider"
+      }
+    },
+    {
+      "id": "quota-context-exceeded",
+      "tool": "claude-code",
+      "category": "quota",
+      "keywords": ["context", "exceeded", "token", "limit", "compact"],
+      "detect": {
+        "type": "log-pattern",
+        "pattern": "context.*exceeded|token.*limit"
+      },
+      "message": "Context window exceeded",
+      "severity": "warning",
+      "fix": {
+        "command": "echo 'Use /compact or /clear to reduce context'",
+        "description": "Compact conversation to free context"
+      }
+    },
+    {
+      "id": "quota-daily-limit",
+      "tool": "claude-code",
+      "category": "quota",
+      "keywords": ["daily", "limit", "usage", "exceeded"],
+      "detect": {
+        "type": "log-pattern",
+        "pattern": "daily.*limit|usage.*exceeded"
+      },
+      "message": "Daily usage limit reached",
+      "severity": "error",
+      "fix": {
+        "manual": true,
+        "description": "Wait until reset or upgrade plan"
+      }
+    },
+    {
+      "id": "quota-fallback-provider",
+      "tool": "system",
+      "category": "quota",
+      "keywords": ["fallback", "provider", "switch", "alternative"],
+      "detect": {
+        "type": "manual-check",
+        "description": "Primary provider quota exceeded"
+      },
+      "message": "Consider using fallback provider",
+      "severity": "info",
+      "fix": {
+        "manual": true,
+        "description": "Switch to: Anthropic→OpenAI→Gemini→Groq"
+      }
+    },
+    {
+      "id": "server-connection-refused",
+      "tool": "system",
+      "category": "server",
+      "keywords": ["connection", "refused", "ECONNREFUSED", "server", "down"],
+      "detect": {
+        "type": "log-pattern",
+        "pattern": "ECONNREFUSED|connection.refused"
+      },
+      "message": "Server connection refused",
+      "severity": "error",
+      "fix": {
+        "manual": true,
+        "description": "Check if server is running, verify port/host"
+      }
+    },
+    {
+      "id": "server-timeout",
+      "tool": "system",
+      "category": "server",
+      "keywords": ["timeout", "ETIMEDOUT", "slow", "response"],
+      "detect": {
+        "type": "log-pattern",
+        "pattern": "ETIMEDOUT|timeout|timed.out"
+      },
+      "message": "Server request timeout",
+      "severity": "warning",
+      "fix": {
+        "manual": true,
+        "description": "Increase timeout or check network"
+      }
+    },
+    {
+      "id": "server-ssl-error",
+      "tool": "system",
+      "category": "server",
+      "keywords": ["ssl", "certificate", "https", "tls", "secure"],
+      "detect": {
+        "type": "log-pattern",
+        "pattern": "SSL|certificate|CERT"
+      },
+      "message": "SSL/TLS certificate error",
+      "severity": "error",
+      "fix": {
+        "manual": true,
+        "description": "Check certificates or use NODE_TLS_REJECT_UNAUTHORIZED=0 (dev only)"
+      }
+    },
+    {
+      "id": "install-curl-fail",
+      "tool": "system",
+      "category": "install",
+      "keywords": ["curl", "download", "fail", "network"],
+      "detect": {
+        "type": "log-pattern",
+        "pattern": "curl.*fail|download.*fail"
+      },
+      "message": "curl download failed",
+      "severity": "error",
+      "fix": {
+        "manual": true,
+        "description": "Check network, try with -L flag for redirects"
+      }
+    },
+    {
+      "id": "install-permission-denied",
+      "tool": "system",
+      "category": "install",
+      "keywords": ["permission", "denied", "EACCES", "access"],
+      "detect": {
+        "type": "log-pattern",
+        "pattern": "EACCES|permission.denied|Permission denied"
+      },
+      "message": "Permission denied during installation",
+      "severity": "error",
+      "fix": {
+        "manual": true,
+        "description": "Fix permissions, avoid sudo for npm"
+      }
+    },
+    {
+      "id": "install-enoent",
+      "tool": "system",
+      "category": "install",
+      "keywords": ["ENOENT", "not found", "missing", "file"],
+      "detect": {
+        "type": "log-pattern",
+        "pattern": "ENOENT|not found|No such file"
+      },
+      "message": "File or directory not found",
+      "severity": "error",
+      "fix": {
+        "manual": true,
+        "description": "Check path exists, create missing directories"
+      }
+    },
+    {
+      "id": "patch-git-conflict",
+      "tool": "system",
+      "category": "patch",
+      "keywords": ["conflict", "merge", "git", "CONFLICT"],
+      "detect": {
+        "command": "git status 2>/dev/null | grep -c 'both modified' || echo 0",
+        "condition": "gt",
+        "value": 0
+      },
+      "message": "Git merge conflicts detected",
+      "severity": "error",
+      "fix": {
+        "manual": true,
+        "description": "Resolve conflicts manually, then git add && git commit"
+      }
+    },
+    {
+      "id": "patch-uncommitted-changes",
+      "tool": "system",
+      "category": "patch",
+      "keywords": ["uncommitted", "changes", "dirty", "stash"],
+      "detect": {
+        "command": "git status --porcelain 2>/dev/null | wc -l | tr -d ' '",
+        "condition": "gt",
+        "value": 0
+      },
+      "message": "Uncommitted changes in working directory",
+      "severity": "warning",
+      "fix": {
+        "command": "git stash",
+        "description": "Stash changes before pulling updates"
+      }
+    },
+    {
+      "id": "mcp-server-crash",
+      "tool": "claude-code",
+      "category": "server",
+      "keywords": ["mcp", "crash", "server", "exit", "spawn"],
+      "detect": {
+        "type": "log-pattern",
+        "pattern": "MCP.*crash|spawn.*fail|server.*exit"
+      },
+      "message": "MCP server crashed or failed to start",
+      "severity": "error",
+      "fix": {
+        "manual": true,
+        "description": "Check MCP config, verify command path exists"
+      }
+    },
+    {
+      "id": "mcp-invalid-response",
+      "tool": "claude-code",
+      "category": "server",
+      "keywords": ["mcp", "invalid", "response", "json", "parse"],
+      "detect": {
+        "type": "log-pattern",
+        "pattern": "invalid.*response|parse.*error"
+      },
+      "message": "MCP server returned invalid response",
+      "severity": "error",
+      "fix": {
+        "manual": true,
+        "description": "Check MCP server logs, verify JSON output"
+      }
+    },
+    {
+      "id": "npm-peer-dependency",
+      "tool": "system",
+      "category": "install",
+      "keywords": ["peer", "dependency", "npm", "conflict"],
+      "detect": {
+        "type": "log-pattern",
+        "pattern": "peer dep|ERESOLVE|peer dependency"
+      },
+      "message": "npm peer dependency conflict",
+      "severity": "warning",
+      "fix": {
+        "command": "npm install --legacy-peer-deps",
+        "description": "Install with legacy peer deps resolution"
+      }
+    },
+    {
+      "id": "brew-formula-not-found",
+      "tool": "system",
+      "category": "install",
+      "keywords": ["brew", "formula", "not found", "tap"],
+      "detect": {
+        "type": "log-pattern",
+        "pattern": "No available formula|formula not found"
+      },
+      "message": "Homebrew formula not found",
+      "severity": "error",
+      "fix": {
+        "manual": true,
+        "description": "Check formula name, may need: brew tap <tap-name>"
+      }
     }
   ]
 }
