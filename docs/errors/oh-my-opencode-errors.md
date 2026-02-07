@@ -458,8 +458,8 @@ tmux new-session -s dev "opencode --port 4096"
 
 **Workaround:**
 ```bash
-# Use previous stable version
-bunx oh-my-opencode@3.1.6 install
+# Use latest stable version
+bunx oh-my-opencode@3.2.4 install
 ```
 
 ---
@@ -587,6 +587,7 @@ cat ~/.config/opencode/oh-my-opencode.json | jq '.disabled_hooks'
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 3.1 | 2026-02-07 | Updated to oh-my-opencode v3.2.4 |
 | 3.0 | 2026-02-07 | Complete rewrite with official docs, 10 patterns |
 | 2.6 | 2024-02-06 | Initial patterns |
 

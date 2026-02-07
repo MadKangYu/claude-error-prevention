@@ -74,7 +74,7 @@
 │  ERROR                            │ QUICK FIX                                │
 │  ─────────────────────────────────┼────────────────────────────────────────  │
 │  "No API key found"               │ Set ANTHROPIC_API_KEY or config          │
-│  "transport not started yet"      │ Update Crush to v0.2.0+                  │
+│  "transport not started yet"      │ Update Crush to v0.39.3+                 │
 │  "Incompatible version"           │ Uninstall old, install fresh             │
 │  "MCP connection failed"          │ Check absolute path in config            │
 │  "uint64 format ignored"          │ Safe to ignore (MCP schema)              │
@@ -461,14 +461,17 @@ export ANTHROPIC_API_KEY=sk-ant-...
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
 
-**Cause:** SSE transport initialization bug in Crush v0.1.11
+**Cause:** SSE transport initialization bug in older Crush versions
 
 **Solution:**
 ```bash
-# Update to v0.2.0+
+# Update to latest (v0.39.3+)
 brew upgrade crush
 # or
 npm update -g @charmland/crush
+
+# Verify version
+crush --version
 ```
 
 **Verified Working Config:**
@@ -693,6 +696,7 @@ crush
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 3.1 | 2026-02-07 | Updated Crush to v0.39.3 |
 | 3.0 | 2026-02-07 | Complete rewrite, clarified OpenCode vs Crush |
 | 2.6 | 2024-02-06 | Initial migration guide |
 
