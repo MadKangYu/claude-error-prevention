@@ -18,7 +18,7 @@
 ║                          ╚██████╗╚██████╔╝██████╔╝███████╗                   ║
 ║                           ╚═════╝ ╚═════╝ ╚═════╝ ╚══════╝                   ║
 ║                                                                              ║
-║   Error Prevention System v3.1 | Patterns: 23 | Source: Official Docs       ║
+║   Error Prevention System v3.2 | Patterns: 24 | Source: Official Docs       ║
 ║                                                                              ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
 ```
@@ -783,6 +783,90 @@ UI preferences (`vimModeEnabled`, `theme`) are stored in `~/.claude.json`, not `
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
 
+### 4.8 API Key Exposure Response Procedure
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ INCIDENT                                                                     │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  API keys exposed in settings.local.json via auto-added permission rules    │
+│                                                                              │
+│  LEAKED:                                                                     │
+│  - GROQ_API_KEY (gsk_...)                                                    │
+│  - OPENROUTER_API_KEY (sk-or-v1-...)                                         │
+│  - CouchDB password (plaintext)                                              │
+│                                                                              │
+│  ROOT CAUSE:                                                                 │
+│  Claude Code auto-appends approved commands to permissions.allow list,      │
+│  which can include environment variables with sensitive values               │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+**Response Procedure:**
+
+| Step | Action | Tool |
+|------|--------|------|
+| 1 | Identify all exposed keys | `grep -r "API_KEY\|SECRET\|PASS" ~/.claude/` |
+| 2 | Check git history for leaks | `git log -p -S "API_KEY"` |
+| 3 | Revoke/rotate exposed keys | Service console (GROQ, OpenRouter, etc.) |
+| 4 | Generate new keys | Service console |
+| 5 | Update `.env` with new keys | Edit `~/.config/opencode/config/.env` |
+| 6 | Clear settings.local.json | Reset to `{"$schema": "..."}` only |
+| 7 | Add to .gitignore | `echo "settings.local.json" >> .gitignore` |
+
+**Service Console URLs:**
+
+| Service | Console URL | Key Format |
+|---------|-------------|------------|
+| GROQ | https://console.groq.com/keys | `gsk_...` |
+| OpenRouter | https://openrouter.ai/settings/keys | `sk-or-v1-...` |
+| Anthropic | https://console.anthropic.com/settings/keys | `sk-ant-...` |
+| OpenAI | https://platform.openai.com/api-keys | `sk-...` |
+
+**Prevention:**
+
+```json
+// ~/.claude/settings.json - Use patterns, not literal values
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl *)",      // Pattern matching
+      "Read",              // Tool-level allow
+      "Write"
+    ],
+    "deny": [
+      "Bash(curl * --header *Authorization*)",  // Block auth headers
+      "Bash(* API_KEY=*)",                      // Block key exposure
+      "Bash(* SECRET=*)"
+    ]
+  }
+}
+```
+
+**Automation (Playwright):**
+
+```typescript
+// API key rotation can be automated via browser automation
+// See: ~/.agents/skills/playwright/SKILL.md
+
+// 1. Navigate to service console
+await page.goto('https://console.groq.com/keys');
+
+// 2. Delete compromised key
+await page.getByTestId('delete-button').click();
+await page.getByRole('button', { name: 'Revoke Key' }).click();
+
+// 3. Create new key
+await page.getByRole('button', { name: 'Create API Key' }).click();
+await page.getByTestId('key-name-input').fill('OpenCode-Main');
+await page.getByTestId('key-form-submit-button').click();
+
+// 4. Capture new key (shown only once)
+const newKey = await page.getByRole('textbox').inputValue();
+```
+
 ---
 
 ## 5. Permission Errors
@@ -1071,6 +1155,7 @@ rm -rf ~/.config/claude-code/auth.json
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 3.2 | 2026-02-08 | Add API key exposure response procedure (4.8) with Playwright automation |
 | 3.1 | 2026-02-08 | Update URLs to code.claude.com, add 5 settings.json error cases (4.2-4.6) |
 | 3.0 | 2026-02-07 | Initial comprehensive guide from official docs |
 
