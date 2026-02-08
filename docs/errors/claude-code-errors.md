@@ -18,7 +18,7 @@
 ║                          ╚██████╗╚██████╔╝██████╔╝███████╗                   ║
 ║                           ╚═════╝ ╚═════╝ ╚═════╝ ╚══════╝                   ║
 ║                                                                              ║
-║   Error Prevention System v3.0 | Patterns: 18 | Source: Official Docs       ║
+║   Error Prevention System v3.1 | Patterns: 23 | Source: Official Docs       ║
 ║                                                                              ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
 ```
@@ -27,11 +27,14 @@
 
 | Resource | URL |
 |----------|-----|
-| Main Docs | https://docs.anthropic.com/en/docs/claude-code |
-| Troubleshooting | https://docs.anthropic.com/en/docs/claude-code/troubleshooting |
-| CLI Reference | https://docs.anthropic.com/en/docs/claude-code/cli-reference |
+| Main Docs | https://code.claude.com/docs/en/overview |
+| Troubleshooting | https://code.claude.com/docs/en/troubleshooting |
+| CLI Reference | https://code.claude.com/docs/en/cli-reference |
 | Settings Schema | https://json.schemastore.org/claude-code-settings.json |
-| MCP Documentation | https://docs.anthropic.com/en/docs/claude-code/mcp |
+| Settings Reference | https://code.claude.com/docs/en/settings |
+| MCP Documentation | https://code.claude.com/docs/en/mcp |
+| Hooks Reference | https://code.claude.com/docs/en/hooks |
+| Permissions | https://code.claude.com/docs/en/permissions |
 | GitHub Issues | https://github.com/anthropics/claude-code/issues |
 
 ---
@@ -90,7 +93,7 @@ $env:CLAUDE_CODE_GIT_BASH_PATH="C:\Program Files\Git\bin\bash.exe"
 # System Properties → Environment Variables → Add CLAUDE_CODE_GIT_BASH_PATH
 ```
 
-**Source:** [Official Troubleshooting](https://docs.anthropic.com/en/docs/claude-code/troubleshooting)
+**Source:** [Official Troubleshooting](https://code.claude.com/docs/en/troubleshooting)
 
 ---
 
@@ -352,7 +355,7 @@ API Error 500?
 claude -p --fallback-model sonnet "your query"
 
 # 4. Switch to AWS Bedrock or Google Vertex AI if configured
-# See: https://docs.anthropic.com/en/docs/claude-code/third-party-integrations
+# See: https://code.claude.com/docs/en/third-party-integrations
 ```
 
 **Recent Outage:** January 22, 2026 - Major service disruption
@@ -1068,9 +1071,10 @@ rm -rf ~/.config/claude-code/auth.json
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 3.1 | 2026-02-08 | Update URLs to code.claude.com, add 5 settings.json error cases (4.2-4.6) |
 | 3.0 | 2026-02-07 | Initial comprehensive guide from official docs |
 
 ---
 
-*Last updated: 2026-02-07 | Source: docs.anthropic.com/en/docs/claude-code*
+*Last updated: 2026-02-08 | Source: code.claude.com/docs/en/overview*
 *Maintainer: claude-error-prevention | License: MIT*
