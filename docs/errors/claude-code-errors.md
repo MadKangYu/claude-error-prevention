@@ -587,7 +587,180 @@ claude doctor
 
 ---
 
-### 4.2 Settings File Priority
+### 4.2 outputStyle: Expected String, Received Object
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ ERROR                                                                        │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  /Users/user/.claude/settings.json                                           │
+│   └ outputStyle: Expected string, but received object                        │
+│                                                                              │
+│  Files with errors are skipped entirely, not just the invalid settings.      │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+**Cause:** `outputStyle` was set as an object instead of a string. The entire settings file is skipped when any field has a type error.
+
+```json
+// ❌ WRONG — object type
+"outputStyle": { "name": "explanatory" }
+
+// ✅ CORRECT — string type
+"outputStyle": "explanatory"
+```
+
+**Valid values:** Any string with `minLength: 1`. Built-in styles: `"default"`, `"Explanatory"`, `"Learning"`. Custom styles go in `~/.claude/output-styles/`.
+
+**Source:** [Output Styles](https://code.claude.com/docs/en/output-styles) · [JSON Schema](https://json.schemastore.org/claude-code-settings.json)
+
+---
+
+### 4.3 Permission Rules: Wildcard-Only Specifier Fails Regex
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ ERROR                                                                        │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  Permission rule "Read(*)" silently fails schema regex validation            │
+│  Same for: Write(*), Edit(*), Glob(*), Grep(*), WebSearch(*)                │
+│                                                                              │
+│  Rules are ignored — permissions don't apply as expected                     │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+**Cause:** The schema regex `(\((?=.*[^)*?])[^)]+\))?` requires at least one character inside `()` that is NOT `*`, `)`, or `?`. A specifier of just `*` fails the lookahead.
+
+```json
+// ❌ WRONG — wildcard-only specifier fails regex
+"Read(*)", "Write(*)", "Edit(*)", "Glob(*)", "Grep(*)", "WebSearch(*)"
+
+// ✅ CORRECT — omit specifier to match all
+"Read", "Write", "Edit", "Glob", "Grep", "WebSearch"
+
+// ✅ ALSO CORRECT — path-based specifier
+"Read(./**)", "Edit(src/**/*.ts)"
+```
+
+**Source:** [Permission Rule Syntax](https://code.claude.com/docs/en/permissions#permission-rule-syntax) · [JSON Schema permissionRule](https://json.schemastore.org/claude-code-settings.json)
+
+---
+
+### 4.4 Local Settings Override: Model Not Found
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ ERROR                                                                        │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  There's an issue with the selected model (claude-opus-4-6-20260205).        │
+│  It may not exist or you may not have access to it.                          │
+│  Run /model to pick a different model.                                       │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+**Cause:** `.claude/settings.local.json` contains `"model": "claude-opus-4-6-20260205"` which overrides `~/.claude/settings.json` `"model": "sonnet"`. Local scope has higher precedence than User scope.
+
+**Precedence (highest → lowest):**
+```
+Managed > CLI args > Local (.claude/settings.local.json) > Project (.claude/settings.json) > User (~/.claude/settings.json)
+```
+
+**Solution:**
+```bash
+# Check what's overriding your model
+cat .claude/settings.local.json | jq '.model'
+
+# Fix: remove model from local settings
+# Or reset local settings entirely:
+echo '{"$schema":"https://json.schemastore.org/claude-code-settings.json"}' > .claude/settings.local.json
+```
+
+**Source:** [Settings Precedence](https://code.claude.com/docs/en/settings#settings-precedence)
+
+---
+
+### 4.5 API Keys Leaked in Permission Allow List
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ SECURITY                                                                     │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  .claude/settings.local.json contains hardcoded API keys in allow rules:     │
+│                                                                              │
+│  "Bash(GROQ_API_KEY=\"gsk_xxx...\" openclaw models:*)"                       │
+│  "Bash(OPENROUTER_API_KEY=\"sk-or-v1-xxx...\" openclaw agent:*)"             │
+│  "Bash(COUCH_PASS=\"7fce...\")"                                              │
+│                                                                              │
+│  These are auto-added when you click "Always Allow" for commands             │
+│  that contain inline environment variables.                                  │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+**Cause:** When Claude runs `SOME_KEY="secret" some-command` and you click "Always Allow", the full command including the secret is saved verbatim to `settings.local.json` permissions.
+
+**Solution:**
+```bash
+# 1. Audit your local settings for secrets
+grep -i "key\|pass\|secret\|token" .claude/settings.local.json
+
+# 2. Reset local settings
+echo '{"$schema":"https://json.schemastore.org/claude-code-settings.json"}' > .claude/settings.local.json
+
+# 3. Prevent recurrence: use env vars via settings.json env field
+{
+  "env": {
+    "GROQ_API_KEY": "gsk_xxx..."
+  }
+}
+
+# 4. Or export in shell profile (~/.zshrc, ~/.bashrc)
+export GROQ_API_KEY="gsk_xxx..."
+```
+
+**Prevention:** Never click "Always Allow" on commands containing inline secrets. Use `env` in settings or shell profile instead.
+
+---
+
+### 4.6 Non-Schema Fields Silently Ignored
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ INFO                                                                         │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  Fields not in the schema are silently ignored due to                        │
+│  "additionalProperties": true                                                │
+│                                                                              │
+│  Common examples:                                                            │
+│    "vimModeEnabled": true      → ignored (use /config toggle)                │
+│    "theme": "dark"             → ignored (use /config toggle)                │
+│    "filesystem": { ... }       → ignored (use permissions.deny Read/Edit)    │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+**Solution:** Use `$schema` in your settings file for IDE validation:
+```json
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json"
+}
+```
+
+UI preferences (`vimModeEnabled`, `theme`) are stored in `~/.claude.json`, not `settings.json`. Use `/config` to toggle them.
+
+**Source:** [JSON Schema](https://json.schemastore.org/claude-code-settings.json)
+
+---
+
+### 4.7 Settings File Priority
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────────┐
