@@ -19,7 +19,7 @@
 ║           ╚██████╗██║  ██║╚██████╔╝███████║██║  ██║                          ║
 ║            ╚═════╝╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚═╝  ╚═╝                          ║
 ║                                                                              ║
-║   Error Prevention System v3.0 | Patterns: 8 | Migration Guide Included     ║
+║   Error Prevention System v3.2 | Patterns: 8 | Migration Guide Included     ║
 ║                                                                              ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
 ```
@@ -77,7 +77,7 @@
 │  "transport not started yet"      │ Update Crush to v0.39.3+                 │
 │  "Incompatible version"           │ Uninstall old, install fresh             │
 │  "MCP connection failed"          │ Check absolute path in config            │
-│  "uint64 format ignored"          │ Safe to ignore (MCP schema)              │
+│  "uint64 format ignored"          │ Patch available (see §7 below)           │
 │  "401 Unauthorized"               │ Verify API key in env or config          │
 │  "LSP server failed"              │ Check LSP binary in PATH                 │
 │  "Permission denied: bash"        │ Add to allowed_tools or use --yolo       │
@@ -606,12 +606,76 @@ crush --yolo
 │ WARNING                                                                      │
 ├──────────────────────────────────────────────────────────────────────────────┤
 │                                                                              │
-│  unknown format "uint64" ignored                                             │
+│  unknown format "uint64" ignored in schema at path                           │
+│  "#/properties/lastModifiedTime"                                             │
+│  "#/$defs/MaterializedViewDefinition/properties/refreshIntervalMs"           │
+│  "#/properties/numRows"                                                      │
 │                                                                              │
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
 
-**Status:** Safe to ignore. MCP server uses non-standard JSON schema format.
+**Root Cause:**
+Google API MCP servers (BigQuery, etc.) use `"format": "uint64"` in their
+tool input schemas. OpenCode passes these schemas to `jsonSchema()` from the
+Vercel AI SDK (`ai@5.x`), which compiles them with AJV v8. AJV does not
+recognize `uint64` as a standard JSON Schema format, so it emits a warning
+for every affected property on every startup.
+
+**Call Chain:**
+```
+MCP Server (BigQuery) → tool inputSchema with "format": "uint64"
+  → packages/opencode/src/mcp/index.ts convertMcpTool()
+    → jsonSchema(schema)  [from "ai" package]
+      → AJV v8.17.1 compile → ⚠️ "unknown format"
+```
+
+**Fix — Strip non-standard formats before AJV compilation:**
+
+Patch `packages/opencode/src/mcp/index.ts`:
+```typescript
+const KNOWN_FORMATS = new Set([
+  "date-time", "date", "time", "duration",
+  "email", "idn-email", "hostname", "idn-hostname",
+  "ipv4", "ipv6", "uri", "uri-reference",
+  "iri", "iri-reference", "uri-template",
+  "json-pointer", "relative-json-pointer",
+  "regex", "uuid", "int32", "int64",
+  "float", "double", "byte", "binary", "password",
+])
+
+function stripUnknownFormats(obj: unknown): unknown {
+  if (Array.isArray(obj)) return obj.map(stripUnknownFormats)
+  if (obj === null || typeof obj !== "object") return obj
+  const result: Record<string, unknown> = {}
+  for (const [k, v] of Object.entries(obj as Record<string, unknown>)) {
+    if (k === "format" && typeof v === "string" && !KNOWN_FORMATS.has(v)) continue
+    result[k] = stripUnknownFormats(v)
+  }
+  return result
+}
+```
+
+Then in `convertMcpTool()`:
+```typescript
+const schema: JSONSchema7 = {
+  ...(stripUnknownFormats(inputSchema) as JSONSchema7),     // ← wrap
+  type: "object",
+  properties: (stripUnknownFormats(inputSchema.properties ?? {}) as JSONSchema7["properties"]),
+  additionalProperties: false,
+}
+```
+
+**Build & Apply:**
+```bash
+cd ~/opencode/opencode-source
+bun install
+cd packages/opencode && bun run build --single
+cp dist/opencode-darwin-arm64/bin/opencode \
+   ~/.npm-global/lib/node_modules/opencode-ai/node_modules/opencode-darwin-arm64/bin/opencode
+```
+
+**Upstream:** [Issue #8581](https://github.com/anomalyco/opencode/issues/8581) (open)
+**Local patch:** `MadKangYu/opencode-1` → branch `fix/strip-uint64-format-warnings`
 
 ---
 
@@ -696,11 +760,12 @@ crush
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 3.2 | 2026-02-09 | Added uint64 format warning root cause analysis and patch |
 | 3.1 | 2026-02-07 | Updated Crush to v0.39.3 |
 | 3.0 | 2026-02-07 | Complete rewrite, clarified OpenCode vs Crush |
 | 2.6 | 2024-02-06 | Initial migration guide |
 
 ---
 
-*Last updated: 2026-02-07 | Sources: opencode.ai, github.com/charmbracelet/crush*
+*Last updated: 2026-02-09 | Sources: opencode.ai, github.com/charmbracelet/crush*
 *Maintainer: claude-error-prevention | License: MIT*
